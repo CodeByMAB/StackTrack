@@ -1,9 +1,14 @@
 import { Box, Button, Container, Heading, Text, VStack, Image, useColorMode } from '@chakra-ui/react';
 import ThemeToggle from '../components/ThemeToggle';
 import heroImage from '../assets/hero-img.png';
+import { useRef } from 'react';
+import NostrLogin from '../components/NostrLogin';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const { colorMode } = useColorMode();
+  const loginRef = useRef<{ openModal: () => void }>(null);
+  const navigate = useNavigate();
 
   return (
     <Box 
@@ -120,6 +125,18 @@ const Home = () => {
           </Button>
         </VStack>
       </Container>
+      
+      {/* Add NostrLogin component with ref */}
+      <NostrLogin 
+        ref={loginRef} 
+        onLogin={(pubkey, profile) => {
+          // Store the pubkey and profile in localStorage
+          localStorage.setItem('nostr_pubkey', pubkey);
+          localStorage.setItem('nostr_profile', JSON.stringify(profile));
+          // Navigate to dashboard
+          navigate('/dashboard');
+        }} 
+      />
     </Box>
   );
 };

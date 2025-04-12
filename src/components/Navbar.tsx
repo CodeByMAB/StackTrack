@@ -6,17 +6,11 @@ import Logo from './Logo';
 import NostrLogin from './NostrLogin';
 import ThemeToggle from './ThemeToggle';
 
-interface NostrProfile {
-  name?: string;
-  picture?: string;
-  about?: string;
-}
-
 const Navbar = () => {
   const { colorMode } = useColorMode();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [profile, setProfile] = useState<NostrProfile | null>(null);
+  const [profile, setProfile] = useState<any>(null);
   const loginRef = useRef<{ openModal: () => void }>(null);
 
   const checkLoginStatus = () => {
@@ -49,9 +43,9 @@ const Navbar = () => {
   // Check login status on mount and when the component updates
   useEffect(() => {
     checkLoginStatus();
-  });
+  }, []);
 
-  const handleLogin = (pubkey: string, profileData: NostrProfile | null) => {
+  const handleLogin = (pubkey: string, profileData: any) => {
     setIsLoggedIn(true);
     setProfile(profileData);
     navigate('/dashboard');

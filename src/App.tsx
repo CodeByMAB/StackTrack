@@ -8,6 +8,8 @@ import Home from './pages/Home'
 import About from './pages/About'
 import Support from './pages/Support'
 import Dashboard from './pages/Dashboard'
+import Privacy from './pages/Privacy'
+import Terms from './pages/Terms'
 import { useEffect, useState } from 'react'
 
 // Protected Route component
@@ -50,6 +52,8 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/support" element={<Support />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
               <Route 
                 path="/dashboard" 
                 element={
