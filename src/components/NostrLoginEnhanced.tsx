@@ -28,7 +28,7 @@ import {
 } from '@chakra-ui/react';
 import { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import NDK from '@nostr-dev-kit/ndk';
-import { nip19 } from 'nostr-tools';
+import { nip19, getPublicKey, generatePrivateKey } from 'nostr-tools';
 import { NostrProfile, NostrLoginMethod } from '../types/models';
 import { useAuth } from '../contexts/AuthContext';
 import { FaBolt, FaKey, FaPlug, FaUserCircle } from 'react-icons/fa';
@@ -161,6 +161,8 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
   // Handle login with private key (nsec)
   const handleNsecLogin = async () => {
     if (!privateKey) {
+      // For development only - you can uncomment this line to use a test key
+      // setPrivateKey("nsec1vl029mgpspedva04g90vltkh6fvh240zqtv9k0t9af8935ke9laq5nstk2");
       setError('Please enter your private key');
       return;
     }
@@ -170,83 +172,58 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
     setConnectingStatus('');
 
     try {
-      // Security: Validate and decode the nsec key
+      // Validate nsec format
       if (!privateKey.startsWith('nsec1')) {
         throw new Error('Invalid private key format. Please enter a valid nsec1 key.');
       }
 
-      let decoded;
+      // Step 1: Decode the nsec to get the raw hex private key
+      let decodedData;
       try {
-        decoded = nip19.decode(privateKey);
+        const decoded = nip19.decode(privateKey);
+        if (decoded.type !== 'nsec') {
+          throw new Error('Invalid private key format. Please enter a valid nsec1 key.');
+        }
+        decodedData = decoded.data;
+        setConnectingStatus('Private key decoded successfully');
       } catch (e) {
+        console.error('Error decoding nsec:', e);
         throw new Error('Invalid private key format. Unable to decode key.');
       }
       
-      if (decoded.type !== 'nsec') {
-        throw new Error('Invalid private key format. Please enter a valid nsec1 key.');
-      }
-
-      setConnectingStatus('Private key decoded successfully');
-
-      // Initialize NDK - may be in offline mode if connection fails
-      const ndk = await initializeNDK();
-      
-      // Get the user's public key from the private key
-      // This works even in offline mode since it's just key derivation
-      const user = ndk.getUser({ hexpubkey: decoded.data });
-      const pubkey = user.pubkey;
-
-      if (!pubkey) {
-        throw new Error('Invalid private key. Could not derive public key.');
-      }
-
-      setConnectingStatus('Generating user profile...');
-
-      // Create a default profile that we'll use if we can't fetch one
-      let profile: NostrProfile = {
-        name: 'Bitcoin User',
-        about: 'A Nostr user passionate about Bitcoin'
-      };
-
-      // Try to fetch the profile from relays if connected
-      const relayConnected = Array.from(ndk.pool.relays.values())
-        .filter(relay => relay.status === 1).length > 0;
+      // Step 2: Derive the public key from the private key
+      try {
+        // Use the direct nostr-tools function to get the public key
+        const pubkeyHex = getPublicKey(decodedData);
         
-      if (relayConnected) {
-        try {
-          setConnectingStatus('Fetching your Nostr profile...');
-          // Try to fetch the profile with a timeout
-          const profilePromise = user.fetchProfile();
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
-          );
-          
-          const fetchedProfile = await Promise.race([profilePromise, timeoutPromise]);
-          
-          if (fetchedProfile) {
-            // Sanitize the profile to prevent XSS, etc.
-            profile = sanitizeProfile(fetchedProfile);
-          }
-        } catch (err) {
-          console.log('Profile fetch failed, using default profile');
-          // Continue with default profile
+        if (!pubkeyHex) {
+          throw new Error('Could not derive public key from private key.');
         }
-      } else {
-        console.log('Operating in offline mode, using default profile');
+        
+        setConnectingStatus('Public key derived successfully');
+        
+        // Step 3: Create a basic profile
+        const profile: NostrProfile = {
+          name: 'Bitcoin User',
+          about: 'A Nostr user passionate about Bitcoin'
+        };
+        
+        // Step 4: Store authentication data
+        localStorage.setItem('nostr_pubkey', pubkeyHex);
+        localStorage.setItem('nostr_profile', JSON.stringify(profile));
+        localStorage.setItem('nostr_auth_timestamp', Date.now().toString());
+        localStorage.setItem('nostr_login_method', 'nsec');
+        
+        setConnectingStatus('Login successful!');
+        
+        // Step 5: Call the auth callbacks
+        login(pubkeyHex, profile);
+        onLogin(pubkeyHex, profile);
+        onClose();
+      } catch (err) {
+        console.error('Error during key derivation:', err);
+        throw new Error('Failed to generate public key from private key. Please check your nsec key.');
       }
-
-      setConnectingStatus('Login successful!');
-      
-      // Store the pubkey and profile in localStorage
-      // Security note: We never store the private key
-      localStorage.setItem('nostr_pubkey', pubkey);
-      localStorage.setItem('nostr_profile', JSON.stringify(profile));
-      localStorage.setItem('nostr_auth_timestamp', Date.now().toString());
-
-      // Call both the AuthContext login and component-specific onLogin callback
-      login(pubkey, profile);
-      onLogin(pubkey, profile);
-      onClose();
     } catch (err) {
       console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'Failed to login. Please check your private key and try again.');
