@@ -9,6 +9,7 @@ import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 import Support from './pages/Support'
 import About from './pages/About'
+import ThemeToggle from './components/ThemeToggle'
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
             </Routes>
           </Box>
           <Footer />
+          <ThemeToggle />
         </Box>
       </Router>
     </ChakraProvider>

@@ -19,7 +19,10 @@ function About() {
   const { colorMode } = useColorMode();
 
   return (
-    <Container maxW={{ base: "95%", sm: "85%", md: "80%", lg: "1200px" }} py={{ base: 8, sm: 12, md: 16, lg: 20 }}>
+    <Container 
+      maxW={{ base: "95%", sm: "85%", md: "80%", lg: "1200px" }} 
+      py={{ base: 8, sm: 12, md: 16, lg: 20 }}
+    >
       <VStack spacing={12} align="stretch">
         {/* Mission Statement */}
         <Box textAlign="center">

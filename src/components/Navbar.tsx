@@ -1,5 +1,6 @@
 import { Box, Flex, HStack, Button, Text, useColorMode, IconButton, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react';
 import { HamburgerIcon } from '@chakra-ui/icons';
+import { Link } from 'react-router-dom';
 import Logo from './Logo';
 
 const Navbar = () => {
@@ -44,6 +45,8 @@ const Navbar = () => {
         Settings
       </Button>
       <Button 
+        as={Link}
+        to="/about"
         variant="ghost" 
         color={colorMode === 'light' ? 'gray.700' : 'white'}
         fontSize={{ base: "sm", md: "md" }}
@@ -60,6 +63,8 @@ const Navbar = () => {
   const LoggedOutNavItems = () => (
     <>
       <Button 
+        as={Link}
+        to="/about"
         variant="ghost" 
         color={colorMode === 'light' ? 'gray.700' : 'white'}
         fontSize={{ base: "sm", md: "md" }}
@@ -86,7 +91,12 @@ const Navbar = () => {
   );
 
   const LoggedInMobileMenu = () => (
-    <MenuList bg={colorMode === 'light' ? 'white' : '#051323'}>
+    <MenuList 
+      bg={colorMode === 'light' ? 'white' : '#051323'}
+      minW="150px"
+      maxW="90vw"
+      zIndex="popover"
+    >
       <MenuItem 
         icon={<Box as="span" fontSize="24px">+</Box>}
         color={colorMode === 'light' ? 'gray.700' : 'white'}
@@ -122,6 +132,8 @@ const Navbar = () => {
         Settings
       </MenuItem>
       <MenuItem 
+        as={Link}
+        to="/about"
         color={colorMode === 'light' ? 'gray.700' : 'white'}
         bg={colorMode === 'light' ? 'white' : '#051323'}
         _hover={{
@@ -140,8 +152,11 @@ const Navbar = () => {
       bg={colorMode === 'light' ? 'white' : '#051323'}
       minW="150px"
       maxW="90vw"
+      zIndex="popover"
     >
       <MenuItem 
+        as={Link}
+        to="/about"
         color={colorMode === 'light' ? 'gray.700' : 'white'}
         bg={colorMode === 'light' ? 'white' : '#051323'}
         _hover={{
@@ -174,6 +189,8 @@ const Navbar = () => {
       borderBottom="1px"
       borderColor={colorMode === 'light' ? 'gray.200' : 'whiteAlpha.100'}
       w="100%"
+      position="relative"
+      zIndex="sticky"
     >
       <Flex 
         maxW={{ base: "100%", sm: "95%", md: "90%", lg: "1200px" }}
@@ -184,14 +201,19 @@ const Navbar = () => {
       >
         <Flex align="center" gap={2} cursor="pointer">
           <Logo />
-          <Text
-            color={colorMode === 'light' ? 'gray.800' : 'white'}
-            fontSize={{ base: "md", md: "xl" }}
-            fontWeight="semibold"
-            letterSpacing="tight"
-          >
-            StackTrack
-          </Text>
+          <Link to="/">
+            <Text
+              color={colorMode === 'light' ? 'gray.800' : 'white'}
+              fontSize={{ base: "md", md: "xl" }}
+              fontWeight="semibold"
+              letterSpacing="tight"
+              _hover={{
+                color: colorMode === 'light' ? 'orange.500' : 'orange.300'
+              }}
+            >
+              StackTrack
+            </Text>
+          </Link>
         </Flex>
 
         {/* Desktop Navigation */}
@@ -203,6 +225,8 @@ const Navbar = () => {
         <Box 
           display={{ base: 'block', md: 'none' }}
           ml="auto"
+          position="relative"
+          zIndex="popover"
         >
           <Menu>
             <MenuButton
