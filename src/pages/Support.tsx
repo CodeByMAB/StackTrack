@@ -14,12 +14,88 @@ import {
   Link,
   HStack,
   Icon,
+  useToast,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { CheckIcon, ChatIcon, ViewIcon, ExternalLinkIcon } from '@chakra-ui/icons';
 import ThemeToggle from '../components/ThemeToggle';
+import { useState } from 'react';
+import { EmailService } from '../services/EmailService';
 
 const Support = () => {
   const { colorMode } = useColorMode();
+  const toast = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+  });
+  const [errors, setErrors] = useState({
+    description: '',
+  });
+
+  const validateForm = () => {
+    const newErrors = {
+      description: '',
+    };
+
+    if (!formData.description.trim()) {
+      newErrors.description = 'Please describe your issue';
+    } else if (formData.description.trim().length < 10) {
+      newErrors.description = 'Please provide more details about your issue';
+    }
+
+    setErrors(newErrors);
+    return !newErrors.description;
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await EmailService.sendSupportEmail(formData);
+      
+      toast({
+        title: "Report sent!",
+        description: "We'll get back to you soon.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+
+      // Reset form
+      setFormData({
+        name: '',
+        description: '',
+      });
+    } catch (error) {
+      console.error('Failed to send support email:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send report. Please try again or contact us directly.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Container 
@@ -116,23 +192,47 @@ const Support = () => {
             Still need help? We've got your back.
           </Text>
 
-          <VStack spacing={4} align="stretch" maxW="600px">
-            <Input
-              placeholder="Name (optional)"
-              size="lg"
-              bg={colorMode === 'light' ? 'white' : 'whiteAlpha.100'}
-            />
-            <Textarea
-              placeholder="Description of Issue"
-              size="lg"
-              rows={6}
-              bg={colorMode === 'light' ? 'white' : 'whiteAlpha.100'}
-            />
+          <VStack 
+            as="form" 
+            spacing={4} 
+            align="stretch" 
+            maxW="600px"
+            onSubmit={handleSubmit}
+          >
+            <FormControl>
+              <FormLabel>Name (optional)</FormLabel>
+              <Input
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="Your name"
+                size="lg"
+                bg={colorMode === 'light' ? 'white' : 'whiteAlpha.100'}
+              />
+            </FormControl>
+
+            <FormControl isInvalid={!!errors.description}>
+              <FormLabel>Description of Issue</FormLabel>
+              <Textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Please describe your issue in detail"
+                size="lg"
+                rows={6}
+                bg={colorMode === 'light' ? 'white' : 'whiteAlpha.100'}
+              />
+              <FormErrorMessage>{errors.description}</FormErrorMessage>
+            </FormControl>
+
             <Button
+              type="submit"
               size="lg"
               colorScheme="orange"
               rightIcon={<ExternalLinkIcon />}
               w="full"
+              isLoading={isLoading}
+              loadingText="Sending..."
             >
               Send Report
             </Button>

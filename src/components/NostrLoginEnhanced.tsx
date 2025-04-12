@@ -32,6 +32,8 @@ import { nip19, getPublicKey, generatePrivateKey } from 'nostr-tools';
 import { NostrProfile, NostrLoginMethod } from '../types/models';
 import { useAuth } from '../contexts/AuthContext';
 import { FaBolt, FaKey, FaPlug, FaUserCircle } from 'react-icons/fa';
+import nos2xLogo from '../assets/nos2x-logo.png';
+import albyLogo from '../assets/getalby-logo.png';
 
 interface NostrLoginProps {
   onLogin: (pubkey: string, profile: NostrProfile) => void;
@@ -522,7 +524,7 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
                       textAlign="center"
                     >
                       <Image 
-                        src="https://github.com/fiatjaf/nos2x/raw/master/extension/icons/128.png" 
+                        src={nos2xLogo}
                         alt="nos2x logo"
                         boxSize="80px"
                         mx="auto"
@@ -562,7 +564,7 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
                       textAlign="center"
                     >
                       <Image 
-                        src="https://getalby.com/assets/alby-logo.svg" 
+                        src={albyLogo}
                         alt="Alby logo"
                         boxSize="80px"
                         mx="auto"

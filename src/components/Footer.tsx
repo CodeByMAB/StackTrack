@@ -21,6 +21,8 @@ const Footer = () => {
       borderTop="1px"
       borderColor={colorMode === 'light' ? 'gray.200' : 'whiteAlpha.100'}
       py={8}
+      position="relative"
+      zIndex={10}
     >
       <Container maxW={{ base: "100%", sm: "95%", md: "90%", lg: "1200px" }} px={{ base: 4, sm: 6, md: 8 }}>
         <VStack spacing={6} align="stretch">
@@ -102,20 +104,10 @@ const Footer = () => {
               color={colorMode === 'light' ? 'gray.600' : 'whiteAlpha.800'}
               _hover={{ color: colorMode === 'light' ? 'gray.800' : 'white' }}
               fontWeight="medium"
-              href="https://utxo.live/oracle/"
-              isExternal
-            >
-              UTXOracle
-            </Link>
-            <Text color={colorMode === 'light' ? 'gray.500' : 'whiteAlpha.600'}>•</Text>
-            <Link 
-              color={colorMode === 'light' ? 'gray.600' : 'whiteAlpha.800'}
-              _hover={{ color: colorMode === 'light' ? 'gray.800' : 'white' }}
-              fontWeight="medium"
               href="https://github.com/block/bitcoin-treasury"
               isExternal
             >
-              Block API
+              Block Public Pricing Endpoint
             </Link>
           </HStack>
         </VStack>

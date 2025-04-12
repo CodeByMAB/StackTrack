@@ -103,17 +103,22 @@ function App() {
       <Router>
         <AuthProvider>
           <Box 
-            minH="100vh" 
-            minW="100vw"
-            height="100%" 
+            minHeight="100vh"
             width="100%"
             display="flex" 
             flexDirection="column"
             bg={theme.config.initialColorMode === 'light' ? 'gray.50' : '#051323'}
             overflow="hidden"
+            position="relative"
           >
             <Navbar />
-            <Box flex="1">
+            <Box 
+              flex="1" 
+              width="100%"
+              display="flex" 
+              flexDirection="column"
+              overflow="auto"
+            >
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
