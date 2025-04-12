@@ -80,7 +80,11 @@ const Home = () => {
               '0 2px 10px rgba(0,0,0,0.15), -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff' : 
               '0 2px 4px rgba(0,0,0,0.1)'}
           >
-            Stack dreams, track value... all in sats.
+            Stack{' '}
+            <Text as="span" color="yellow.500">dreams</Text>
+            , track value... all in{' '}
+            <Text as="span" color="orange.400">sats</Text>
+            .
           </Heading>
           
           <Text
@@ -97,24 +101,20 @@ const Home = () => {
           </Text>
 
           <Button
-            size={{ base: "md", md: "lg" }}
-            mt={{ base: 6, sm: 7, md: 8 }}
-            px={{ base: 6, sm: 7, md: 8 }}
-            py={{ base: 5, sm: 5.5, md: 6 }}
-            variant="solid"
-            bg={colorMode === 'light' ? 'white' : 'whiteAlpha.200'}
-            borderRadius="full"
-            borderWidth="1px"
-            color={colorMode === 'light' ? 'gray.800' : 'white'}
-            borderColor={colorMode === 'light' ? 'gray.200' : 'whiteAlpha.200'}
+            size="lg"
+            colorScheme="yellow"
+            bg="yellow.500"
+            color="black"
             _hover={{
-              bg: colorMode === 'light' ? 'gray.50' : 'whiteAlpha.300',
-              transform: 'translateY(-2px)',
-              shadow: 'lg'
+              bg: "yellow.400",
+              transform: "translateY(-2px)",
+              boxShadow: "lg"
             }}
-            transition="all 0.2s"
-            w={{ base: "full", sm: "auto" }}
-            shadow="lg"
+            _active={{
+              bg: "yellow.600"
+            }}
+            onClick={() => loginRef.current?.openModal()}
+            mb={8}
           >
             Login with Nostr
           </Button>
