@@ -56,3 +56,73 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
 }
+
+// Nostr login methods
+export type NostrLoginMethod = 'nsec' | 'nos2x' | 'alby' | 'nwc';
+
+// Nostr Wallet Connect related types
+export interface NWCInfo {
+  relays: string[];
+  pubkey: string;
+  secret: string;
+  created_at: number;
+  active: boolean;
+}
+
+// External API types
+export interface ExternalApiProduct {
+  title: string;
+  description: string;
+  price: number;
+  currency: string;
+  url: string;
+  imageUrl: string;
+  source: 'amazon' | 'etsy' | 'ebay' | 'zillow' | 'custom';
+}
+
+// Zillow property type
+export interface ZillowProperty {
+  address: string;
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  squareFeet: number;
+  imageUrl: string;
+  url: string;
+}
+
+// Amazon product type
+export interface AmazonProduct {
+  title: string;
+  price: number;
+  currency: string;
+  rating: number;
+  reviewCount: number;
+  imageUrl: string;
+  url: string;
+  isPrime: boolean;
+}
+
+// Etsy product type
+export interface EtsyProduct {
+  title: string;
+  price: number;
+  currency: string;
+  sellerName: string;
+  rating: number;
+  imageUrl: string;
+  url: string;
+  isHandmade: boolean;
+}
+
+// Ebay product type
+export interface EbayProduct {
+  title: string;
+  price: number;
+  currency: string;
+  condition: string;
+  imageUrl: string;
+  url: string;
+  isAuction: boolean;
+  endTime?: number;
+}

@@ -1,5 +1,5 @@
-import { Box, Flex, Text, Skeleton, useColorMode, Icon } from '@chakra-ui/react';
-import { FaBitcoin } from 'react-icons/fa';
+import { Box, Flex, Text, Skeleton, useColorMode, Icon, Link } from '@chakra-ui/react';
+import { FaBitcoin, FaExternalLinkAlt } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import { BitcoinPrice as BitcoinPriceType } from '../types/models';
 
@@ -8,6 +8,9 @@ const CACHE_DURATION = 15 * 60 * 1000;
 
 // Local storage key for bitcoin price data
 const BITCOIN_PRICE_KEY = 'stacktrack_bitcoin_price';
+
+// Block Bitcoin Price API URL
+const BLOCK_BITCOIN_PRICE_API_URL = 'https://pricing.bitcoin.block.xyz/current-price';
 
 export const BitcoinPrice = () => {
   const { colorMode } = useColorMode();
@@ -36,11 +39,33 @@ export const BitcoinPrice = () => {
           }
         }
         
-        // Try to fetch fresh data
+        // Try to fetch fresh data from Block's Bitcoin Price API
         try {
-          // In a real implementation, this would use the Bitcoin Treasury API
-          // But for demo purposes, we'll immediately throw to simulate network error
-          throw new Error("Network request failed");
+          console.log('Fetching Bitcoin price from Block API...');
+          const response = await fetch(BLOCK_BITCOIN_PRICE_API_URL);
+          
+          if (!response.ok) {
+            throw new Error(`API returned status ${response.status}`);
+          }
+          
+          const data = await response.json();
+          
+          // Check if the response contains the expected data
+          // Block API returns data in a format like { USD: 12345.67 }
+          if (typeof data.USD !== 'number') {
+            throw new Error('Invalid price data received');
+          }
+          
+          // Create a new price data object
+          const newPriceData: BitcoinPriceType = {
+            usd: data.USD,
+            timestamp: Date.now()
+          };
+          
+          // Update state and cache the data
+          setPriceData(newPriceData);
+          localStorage.setItem(BITCOIN_PRICE_KEY, JSON.stringify(newPriceData));
+          console.log('Successfully updated Bitcoin price:', newPriceData.usd);
         } catch (fetchError) {
           console.error('Error fetching latest Bitcoin price:', fetchError);
           
@@ -101,7 +126,7 @@ export const BitcoinPrice = () => {
         <Icon as={FaBitcoin} color="orange.500" boxSize={6} mr={2} />
         <Text fontWeight="bold" fontSize="lg">Bitcoin Price:</Text>
         <Skeleton isLoaded={!isLoading} ml={2} borderRadius="md" minW="100px">
-          <Text fontWeight="bold" fontSize="lg">
+          <Text fontWeight="bold" fontSize="lg" className="bitcoin-price-value privacy-sensitive">
             {priceData ? new Intl.NumberFormat('en-US', {
               style: 'currency',
               currency: 'USD'
@@ -110,15 +135,29 @@ export const BitcoinPrice = () => {
         </Skeleton>
       </Flex>
       {priceData && (
-        <Text 
-          textAlign="center" 
-          fontSize="xs" 
-          mt={1} 
+        <Flex 
+          justifyContent="center" 
+          alignItems="center" 
+          mt={1}
+          fontSize="xs"
           color={colorMode === 'light' ? 'gray.500' : 'gray.400'}
         >
-          {new Date(priceData.timestamp).toLocaleString()} 
-          {Date.now() - priceData.timestamp > CACHE_DURATION && ' (cached)'}
-        </Text>
+          <Text>
+            {new Date(priceData.timestamp).toLocaleString()} 
+            {Date.now() - priceData.timestamp > CACHE_DURATION && ' (cached)'}
+          </Text>
+          <Link 
+            href="https://block.xyz" 
+            isExternal
+            display="inline-flex"
+            alignItems="center"
+            ml={2}
+            color={colorMode === 'light' ? 'orange.600' : 'orange.200'}
+            _hover={{ textDecoration: 'underline' }}
+          >
+            via Block <Icon as={FaExternalLinkAlt} boxSize={2} ml={1} />
+          </Link>
+        </Flex>
       )}
     </Box>
   );

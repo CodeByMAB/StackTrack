@@ -1,4 +1,4 @@
-import { Box, Container, VStack, Heading, Text, useColorMode, Button, Tabs, TabList, TabPanels, Tab, TabPanel, useDisclosure, useToast, HStack } from '@chakra-ui/react';
+import { Box, Container, VStack, Heading, Text, useColorMode, Button, Tabs, TabList, TabPanels, Tab, TabPanel, useDisclosure, useToast, HStack, Flex } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WishlistDashboard } from '../components/wishlist/WishlistDashboard';
@@ -7,6 +7,7 @@ import { BitcoinPrice } from '../components/BitcoinPrice';
 import { NostrProfile, WishlistItem } from '../types/models';
 import { v4 as uuidv4 } from 'uuid';
 import { mockWishlistItems } from '../components/wishlist/MockData';
+import { SecurityService } from '../services/SecurityService';
 
 const Dashboard = () => {
   const { colorMode } = useColorMode();
@@ -30,17 +31,23 @@ const Dashboard = () => {
   } = useDisclosure();
 
   useEffect(() => {
-    // Check if user is logged in
-    const storedPubkey = localStorage.getItem('nostr_pubkey');
-    const storedProfile = localStorage.getItem('nostr_profile');
-    
-    if (!storedPubkey) {
-      // Redirect to home if not logged in
+    // Check if user is authenticated using SecurityService
+    if (!SecurityService.isAuthenticated()) {
+      // Redirect to home if not authenticated
       navigate('/');
       return;
     }
-
-    setPubkey(storedPubkey);
+    
+    // Get the stored pubkey and profile
+    const storedPubkey = localStorage.getItem('nostr_pubkey');
+    const storedProfile = localStorage.getItem('nostr_profile');
+    
+    if (storedPubkey) {
+      setPubkey(storedPubkey);
+      
+      // Refresh the authentication timer
+      SecurityService.refreshAuthentication();
+    }
 
     if (storedProfile) {
       try {
@@ -82,6 +89,19 @@ const Dashboard = () => {
   useEffect(() => {
     localStorage.setItem('wishlist_items', JSON.stringify(wishlistItems));
   }, [wishlistItems]);
+  
+  // Handle logout
+  const handleLogout = () => {
+    SecurityService.clearAuthData();
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+      status: "info",
+      duration: 3000,
+      isClosable: true,
+    });
+    navigate('/');
+  };
 
   // Handle saving an item (new or edited)
   const handleSaveItem = (itemData: Partial<WishlistItem>) => {
@@ -226,10 +246,46 @@ const Dashboard = () => {
                   boxShadow="sm"
                 >
                   <Heading as="h3" size="lg" mb={4}>User Settings</Heading>
-                  <Text>
-                    Manage your profile, notifications, and privacy preferences. 
-                    This feature is coming soon!
-                  </Text>
+                  <VStack spacing={4} align="stretch">
+                    <Text>
+                      Manage your profile, notifications, and privacy preferences.
+                    </Text>
+                    
+                    <Box mt={4}>
+                      <Heading as="h4" size="md" mb={3}>Account</Heading>
+                      <Flex direction="column" gap={2} className="account-details">
+                        <Text fontSize="sm">
+                          Logged in as: <Text as="span" fontWeight="bold">{profile?.name || 'Bitcoin User'}</Text>
+                        </Text>
+                        <Text fontSize="sm">
+                          Public Key: <Text as="span" fontWeight="medium" color="gray.500" maxW="300px" isTruncated className="pubkey privacy-sensitive">{pubkey}</Text>
+                        </Text>
+                      </Flex>
+                      
+                      <Button 
+                        mt={4}
+                        colorScheme="red"
+                        variant="outline"
+                        onClick={handleLogout}
+                      >
+                        Logout
+                      </Button>
+                    </Box>
+                    
+                    <Box mt={4}>
+                      <Heading as="h4" size="md" mb={3}>Privacy</Heading>
+                      <Button
+                        colorScheme="yellow"
+                        size="sm"
+                        onClick={() => SecurityService.enablePrivacyMode(!SecurityService.isPrivacyModeEnabled())}
+                      >
+                        {SecurityService.isPrivacyModeEnabled() ? 'Disable' : 'Enable'} Privacy Mode
+                      </Button>
+                      <Text fontSize="xs" mt={2} color="gray.500">
+                        Privacy mode hides sensitive information on the dashboard.
+                      </Text>
+                    </Box>
+                  </VStack>
                 </Box>
               </TabPanel>
             </TabPanels>

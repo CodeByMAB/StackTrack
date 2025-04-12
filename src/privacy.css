@@ -1,0 +1,51 @@
+/**
+ * Privacy Mode CSS
+ * 
+ * These styles apply when privacy mode is activated in the application.
+ * They help obscure sensitive financial information on the screen.
+ */
+
+/* Add .privacy-mode class to the body element when privacy mode is enabled */
+body.privacy-mode .privacy-sensitive {
+  filter: blur(4px);
+  user-select: none;
+  position: relative;
+}
+
+/* Remove blur on hover to allow users to see data when needed */
+body.privacy-mode .privacy-sensitive:hover {
+  filter: none;
+}
+
+/* Show an icon indicating privacy protected content */
+body.privacy-mode .privacy-sensitive::before {
+  content: '🔒';
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8em;
+  opacity: 0.7;
+}
+
+/* Hide very sensitive data completely */
+body.privacy-mode .privacy-critical {
+  display: none;
+}
+
+/* Dashboard items in privacy mode */
+body.privacy-mode .wishlist-price,
+body.privacy-mode .bitcoin-price-value,
+body.privacy-mode .sats-amount {
+  filter: blur(4px);
+}
+
+/* Settings pages in privacy mode */
+body.privacy-mode .account-details .pubkey {
+  display: inline-block;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}

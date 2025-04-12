@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 import { useEffect, useState } from 'react'
+import { SecurityService } from './services/SecurityService'
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -19,8 +20,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const pubkey = localStorage.getItem('nostr_pubkey')
-    setIsLoggedIn(!!pubkey)
+    // Use SecurityService to check authentication
+    setIsLoggedIn(SecurityService.isAuthenticated())
     setIsLoading(false)
   }, [])
 
@@ -36,6 +37,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 }
 
 function App() {
+  // Check if privacy mode is enabled on app initialization
+  useEffect(() => {
+    if (SecurityService.isPrivacyModeEnabled()) {
+      document.body.classList.add('privacy-mode');
+    } else {
+      document.body.classList.remove('privacy-mode');
+    }
+  }, []);
+  
   return (
     <ChakraProvider theme={theme}>
       <ColorModeScript initialColorMode={theme.config.initialColorMode} />

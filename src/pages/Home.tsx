@@ -2,8 +2,9 @@ import { Box, Button, Container, Heading, Text, VStack, Image, useColorMode } fr
 import ThemeToggle from '../components/ThemeToggle';
 import heroImage from '../assets/hero-img.png';
 import { useRef } from 'react';
-import NostrLogin from '../components/NostrLogin';
+import NostrLoginEnhanced from '../components/NostrLoginEnhanced';
 import { useNavigate } from 'react-router-dom';
+import { SecurityService } from '../services/SecurityService';
 
 const Home = () => {
   const { colorMode } = useColorMode();
@@ -126,15 +127,18 @@ const Home = () => {
         </VStack>
       </Container>
       
-      {/* Add NostrLogin component with ref */}
-      <NostrLogin 
+      {/* Add NostrLoginEnhanced component with ref */}
+      <NostrLoginEnhanced 
         ref={loginRef} 
         onLogin={(pubkey, profile) => {
-          // Store the pubkey and profile in localStorage
-          localStorage.setItem('nostr_pubkey', pubkey);
-          localStorage.setItem('nostr_profile', JSON.stringify(profile));
+          // Set the auth timestamp using SecurityService
+          localStorage.setItem('nostr_auth_timestamp', Date.now().toString());
+          
           // Navigate to dashboard
           navigate('/dashboard');
+          
+          // Refresh the authentication timer
+          SecurityService.refreshAuthentication();
         }} 
       />
     </Box>

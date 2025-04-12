@@ -1,6 +1,7 @@
-import { Box, Heading, Text, Badge, Image, Flex, useColorMode, Icon } from '@chakra-ui/react';
+import { Box, Heading, Text, Badge, Image, Flex, useColorMode, Icon, HStack } from '@chakra-ui/react';
 import { FaBitcoin } from 'react-icons/fa';
 import { WishlistItem } from '../../types/models';
+import { mockCategories } from './MockData';
 
 interface WishlistCardProps {
   item: WishlistItem;
@@ -26,6 +27,16 @@ export const WishlistCard = ({ item, onClick }: WishlistCardProps) => {
     low: { bg: 'green.500', text: 'white' },
     medium: { bg: 'yellow.500', text: 'black' },
     high: { bg: 'red.500', text: 'white' },
+  };
+  
+  // Find category name
+  const category = mockCategories.find(cat => cat.id === item.category);
+  
+  // Category badge colors from our mockCategories
+  const getCategoryColor = (categoryId: string | undefined) => {
+    if (!categoryId) return 'gray';
+    const cat = mockCategories.find(c => c.id === categoryId);
+    return cat?.color || 'gray';
   };
   
   return (
@@ -60,12 +71,24 @@ export const WishlistCard = ({ item, onClick }: WishlistCardProps) => {
         <Heading as="h3" size="md" noOfLines={1}>
           {item.name}
         </Heading>
-        <Badge 
-          bg={priorityColors[item.priority].bg} 
-          color={priorityColors[item.priority].text}
-        >
-          {item.priority}
-        </Badge>
+        <HStack spacing={1}>
+          {item.category && (
+            <Badge
+              bg={`${getCategoryColor(item.category)}.100`}
+              color={`${getCategoryColor(item.category)}.800`}
+              fontSize="xs"
+            >
+              {category?.name || 'Uncategorized'}
+            </Badge>
+          )}
+          <Badge 
+            bg={priorityColors[item.priority].bg} 
+            color={priorityColors[item.priority].text}
+            fontSize="xs"
+          >
+            {item.priority}
+          </Badge>
+        </HStack>
       </Flex>
       
       {item.description && (
@@ -80,7 +103,7 @@ export const WishlistCard = ({ item, onClick }: WishlistCardProps) => {
       )}
       
       <Flex mt={3} justify="space-between" align="center">
-        <Text fontWeight="bold" fontSize="md">
+        <Text fontWeight="bold" fontSize="md" className="wishlist-price privacy-sensitive">
           {formattedPrice}
         </Text>
         
@@ -94,6 +117,7 @@ export const WishlistCard = ({ item, onClick }: WishlistCardProps) => {
             pr={2}
             borderRadius="md"
             fontSize="sm"
+            className="sats-amount privacy-sensitive"
           >
             <Icon as={FaBitcoin} mr={1} color="orange.500" />
             {formattedSats} sats

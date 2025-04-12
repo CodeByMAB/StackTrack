@@ -28,8 +28,9 @@ import {
   Tooltip
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
-import { WishlistItem } from '../../types/models';
+import { WishlistItem, Category } from '../../types/models';
 import { FaBitcoin, FaTrash } from 'react-icons/fa';
+import { mockCategories } from './MockData';
 
 interface ItemFormModalProps {
   isOpen: boolean;
@@ -222,15 +223,33 @@ export const ItemFormModal = ({ isOpen, onClose, item, onSave, onDelete }: ItemF
               </Box>
             )}
 
-            <FormControl isRequired isInvalid={!!errors.priority}>
-              <FormLabel>Priority</FormLabel>
-              <Select name="priority" value={formValues.priority || 'medium'} onChange={handleChange}>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </Select>
-              {errors.priority && <FormErrorMessage>{errors.priority}</FormErrorMessage>}
-            </FormControl>
+            <HStack spacing={4} align="flex-start">
+              <FormControl isRequired isInvalid={!!errors.priority} flex="1">
+                <FormLabel>Priority</FormLabel>
+                <Select name="priority" value={formValues.priority || 'medium'} onChange={handleChange}>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </Select>
+                {errors.priority && <FormErrorMessage>{errors.priority}</FormErrorMessage>}
+              </FormControl>
+
+              <FormControl flex="1">
+                <FormLabel>Category</FormLabel>
+                <Select 
+                  name="category" 
+                  value={formValues.category || ''} 
+                  onChange={handleChange}
+                >
+                  <option value="">Select Category</option>
+                  {mockCategories.map(category => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            </HStack>
 
             <Divider />
 

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { ChakraProvider, extendTheme, ThemeConfig } from '@chakra-ui/react'
 import App from './App.tsx'
 import './index.css'
+import './privacy.css'
 
 interface ColorModeProps {
   colorMode: 'light' | 'dark'
