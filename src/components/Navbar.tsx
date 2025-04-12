@@ -1,115 +1,60 @@
 import { Box, Flex, HStack, Button, Text, useColorMode, IconButton, Menu, MenuButton, MenuList, MenuItem, Avatar } from '@chakra-ui/react';
 import { HamburgerIcon } from '@chakra-ui/icons';
-import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useRef } from 'react';
 import Logo from './Logo';
-import NostrLogin from './NostrLogin';
+import NostrLoginEnhanced from './NostrLoginEnhanced';
 import ThemeToggle from './ThemeToggle';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const { colorMode } = useColorMode();
-  const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
+  const location = useLocation();
+  const { isLoggedIn, profile, logout } = useAuth();
   const loginRef = useRef<{ openModal: () => void }>(null);
-
-  const checkLoginStatus = () => {
-    const pubkey = localStorage.getItem('nostr_pubkey');
-    const storedProfile = localStorage.getItem('nostr_profile');
-    if (pubkey) {
-      setIsLoggedIn(true);
-      if (storedProfile) {
-        try {
-          setProfile(JSON.parse(storedProfile));
-        } catch (e) {
-          console.error('Failed to parse stored profile:', e);
-        }
-      }
-    } else {
-      setIsLoggedIn(false);
-      setProfile(null);
-    }
-  };
-
-  useEffect(() => {
-    checkLoginStatus();
-    // Add event listener for storage changes
-    window.addEventListener('storage', checkLoginStatus);
-    return () => {
-      window.removeEventListener('storage', checkLoginStatus);
-    };
-  }, []);
-
-  // Check login status on mount and when the component updates
-  useEffect(() => {
-    checkLoginStatus();
-  }, []);
-
-  const handleLogin = (pubkey: string, profileData: any) => {
-    setIsLoggedIn(true);
-    setProfile(profileData);
-    navigate('/dashboard');
-  };
-
+  
+  // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem('nostr_pubkey');
-    localStorage.removeItem('nostr_profile');
-    setIsLoggedIn(false);
-    setProfile(null);
-    navigate('/');
+    logout();
   };
 
-  const LoggedInNavItems = () => (
-    <>
-      <Button
-        variant="ghost"
-        color={colorMode === 'light' ? 'gray.700' : 'white'}
-        leftIcon={<Box as="span" fontSize={{ base: "20px", md: "24px" }}>+</Box>}
-        fontSize={{ base: "sm", md: "md" }}
-        px={{ base: 1, md: 3 }}
-        _hover={{
-          bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
-        }}
-      >
-        Add Item
-      </Button>
-      <Button
-        variant="ghost"
-        color={colorMode === 'light' ? 'gray.700' : 'white'}
-        fontSize={{ base: "sm", md: "md" }}
-        px={{ base: 1, md: 3 }}
-        _hover={{
-          bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
-        }}
-      >
-        Categories
-      </Button>
-      <Button
-        variant="ghost"
-        color={colorMode === 'light' ? 'gray.700' : 'white'}
-        fontSize={{ base: "sm", md: "md" }}
-        px={{ base: 1, md: 3 }}
-        _hover={{
-          bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
-        }}
-      >
-        Settings
-      </Button>
-      <Button 
-        as={Link}
-        to="/about"
-        variant="ghost" 
-        color={colorMode === 'light' ? 'gray.700' : 'white'}
-        fontSize={{ base: "sm", md: "md" }}
-        px={{ base: 1, md: 3 }}
-        _hover={{
-          bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
-        }}
-      >
-        About
-      </Button>
-    </>
-  );
+
+  const LoggedInNavItems = () => {
+    // Only show relevant nav items based on current route
+    const isDashboard = location.pathname === '/dashboard';
+    
+    return (
+      <>
+        {isDashboard && (
+          <Button
+            variant="ghost"
+            color={colorMode === 'light' ? 'gray.700' : 'white'}
+            leftIcon={<Box as="span" fontSize={{ base: "20px", md: "24px" }}>+</Box>}
+            fontSize={{ base: "sm", md: "md" }}
+            px={{ base: 1, md: 3 }}
+            _hover={{
+              bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
+            }}
+          >
+            Add Item
+          </Button>
+        )}
+        <Button 
+          as={Link}
+          to="/about"
+          variant="ghost" 
+          color={colorMode === 'light' ? 'gray.700' : 'white'}
+          fontSize={{ base: "sm", md: "md" }}
+          px={{ base: 1, md: 3 }}
+          _hover={{
+            bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
+          }}
+        >
+          About
+        </Button>
+      </>
+    );
+  };
 
   const LoggedOutNavItems = () => (
     <>
@@ -126,73 +71,61 @@ const Navbar = () => {
       >
         About
       </Button>
-      <NostrLogin ref={loginRef} onLogin={handleLogin} />
+      <NostrLoginEnhanced ref={loginRef} onLogin={() => {
+        // The login is now handled by the AuthContext inside NostrLoginEnhanced
+        // This callback is kept for backward compatibility
+      }} />
     </>
   );
 
-  const LoggedInMobileMenu = () => (
-    <MenuList bg={colorMode === 'light' ? 'white' : '#051323'}>
-      <MenuItem 
-        icon={<Box as="span" fontSize="24px">+</Box>}
-        color={colorMode === 'light' ? 'gray.700' : 'white'}
-        bg={colorMode === 'light' ? 'white' : '#051323'}
-        _hover={{
-          bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
-        }}
-        fontSize="sm"
-        px={3}
-      >
-        Add Item
-      </MenuItem>
-      <MenuItem 
-        color={colorMode === 'light' ? 'gray.700' : 'white'}
-        bg={colorMode === 'light' ? 'white' : '#051323'}
-        _hover={{
-          bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
-        }}
-        fontSize="sm"
-        px={3}
-      >
-        Categories
-      </MenuItem>
-      <MenuItem 
-        color={colorMode === 'light' ? 'gray.700' : 'white'}
-        bg={colorMode === 'light' ? 'white' : '#051323'}
-        _hover={{
-          bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
-        }}
-        fontSize="sm"
-        px={3}
-      >
-        Settings
-      </MenuItem>
-      <MenuItem 
-        as={Link}
-        to="/about"
-        color={colorMode === 'light' ? 'gray.700' : 'white'}
-        bg={colorMode === 'light' ? 'white' : '#051323'}
-        _hover={{
-          bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
-        }}
-        fontSize="sm"
-        px={3}
-      >
-        About
-      </MenuItem>
-      <MenuItem 
-        color={colorMode === 'light' ? 'gray.700' : 'white'}
-        bg={colorMode === 'light' ? 'white' : '#051323'}
-        _hover={{
-          bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
-        }}
-        fontSize="sm"
-        px={3}
-        onClick={handleLogout}
-      >
-        Logout
-      </MenuItem>
-    </MenuList>
-  );
+  const LoggedInMobileMenu = () => {
+    // Only show relevant nav items based on current route
+    const isDashboard = location.pathname === '/dashboard';
+    
+    return (
+      <MenuList bg={colorMode === 'light' ? 'white' : '#051323'}>
+        {isDashboard && (
+          <MenuItem 
+            icon={<Box as="span" fontSize="24px">+</Box>}
+            color={colorMode === 'light' ? 'gray.700' : 'white'}
+            bg={colorMode === 'light' ? 'white' : '#051323'}
+            _hover={{
+              bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
+            }}
+            fontSize="sm"
+            px={3}
+          >
+            Add Item
+          </MenuItem>
+        )}
+        <MenuItem 
+          as={Link}
+          to="/about"
+          color={colorMode === 'light' ? 'gray.700' : 'white'}
+          bg={colorMode === 'light' ? 'white' : '#051323'}
+          _hover={{
+            bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
+          }}
+          fontSize="sm"
+          px={3}
+        >
+          About
+        </MenuItem>
+        <MenuItem 
+          color={colorMode === 'light' ? 'gray.700' : 'white'}
+          bg={colorMode === 'light' ? 'white' : '#051323'}
+          _hover={{
+            bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
+          }}
+          fontSize="sm"
+          px={3}
+          onClick={logout}
+        >
+          Logout
+        </MenuItem>
+      </MenuList>
+    );
+  };
 
   const LoggedOutMobileMenu = () => (
     <MenuList bg={colorMode === 'light' ? 'white' : '#051323'}>

@@ -137,13 +137,29 @@ export const ItemFormModal = ({ isOpen, onClose, item, onSave, onDelete }: ItemF
     }
   };
 
-  // Simulate calculating satoshi preview
-  // In a real app, this would use the BitcoinService.usdToSats
+  // Calculate satoshi preview
   useEffect(() => {
     if (formValues.price && formValues.price > 0 && formValues.currency === 'USD') {
-      // Mock conversion rate: 1 USD = ~1,600 sats at 60k BTC/USD
-      const mockConversion = formValues.price * 1600;
-      setSatsPreview(Math.round(mockConversion));
+      try {
+        // Import BitcoinService dynamically to avoid circular dependencies
+        import('../../services/BitcoinService').then(module => {
+          const BitcoinService = module.default || module.BitcoinService;
+          // Use the service to convert or fallback to estimation
+          const sats = BitcoinService.usdToSats ? 
+            BitcoinService.usdToSats(formValues.price) : 
+            Math.round(formValues.price * 1600); // Fallback estimation
+          setSatsPreview(Math.round(sats));
+        }).catch(err => {
+          console.error('Error loading BitcoinService:', err);
+          // Fallback to estimation if service can't be loaded
+          const mockConversion = formValues.price * 1600;
+          setSatsPreview(Math.round(mockConversion));
+        });
+      } catch (error) {
+        // Fallback to estimation if any error occurs
+        const mockConversion = formValues.price * 1600;
+        setSatsPreview(Math.round(mockConversion));
+      }
     } else {
       setSatsPreview(null);
     }

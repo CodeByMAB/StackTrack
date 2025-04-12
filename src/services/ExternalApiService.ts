@@ -44,6 +44,17 @@ export const ExternalApiService = {
         }
       }
       
+      /***************************************************************************
+      * ⚠️⚠️⚠️ PRODUCTION CHANGE NEEDED ⚠️⚠️⚠️
+      * 
+      * Replace with a proper secure API implementation:
+      * 1. DO NOT include API keys in frontend code
+      * 2. Use a backend proxy or serverless function
+      * 3. Set up proper CORS and security headers
+      * 
+      * See .env.example for the recommended approach
+      ***************************************************************************/
+      
       // For real implementation, use a proxy to avoid CORS and hide API key
       // In production, this would call your backend which would then call the Rainforest API
       const url = `https://api.rainforestapi.com/request?api_key=${process.env.RAINFOREST_API_KEY}&type=search&amazon_domain=amazon.com&search_term=${encodeURIComponent(query)}`;
@@ -77,6 +88,17 @@ export const ExternalApiService = {
         return { success: true, data: products };
       } catch (apiError) {
         console.error('Amazon API error:', apiError);
+        
+        /***************************************************************************
+        * ⚠️⚠️⚠️ REMOVE FOR PRODUCTION ⚠️⚠️⚠️
+        * 
+        * This mock data fallback should be removed in production.
+        * Instead, either:
+        * 1. Return an actual error so users know the API is unavailable
+        * 2. Implement a proper fallback mechanism (cached results, retry, etc.)
+        * 
+        * DO NOT ship this mock data in a production release!
+        ***************************************************************************/
         
         // Fallback to graceful degradation with sample data
         // This ensures the app still works when API is unavailable
@@ -132,6 +154,17 @@ export const ExternalApiService = {
         }
       }
       
+      /***************************************************************************
+      * ⚠️⚠️⚠️ PRODUCTION CHANGE NEEDED ⚠️⚠️⚠️
+      * 
+      * Replace with a proper secure API implementation:
+      * 1. DO NOT include API keys in frontend code
+      * 2. Use a backend proxy or serverless function
+      * 3. Set up proper CORS and security headers
+      * 
+      * See .env.example for the recommended approach
+      ***************************************************************************/
+      
       // For real implementation, use Etsy Open API
       // In production, this would call your backend which would then call the Etsy API
       const url = `https://openapi.etsy.com/v3/application/listings/active?api_key=${process.env.ETSY_API_KEY}&keywords=${encodeURIComponent(query)}&limit=10`;
@@ -173,6 +206,15 @@ export const ExternalApiService = {
         return { success: true, data: products };
       } catch (apiError) {
         console.error('Etsy API error:', apiError);
+        
+        /***************************************************************************
+        * ⚠️⚠️⚠️ REMOVE FOR PRODUCTION ⚠️⚠️⚠️
+        * 
+        * This mock data fallback should be removed in production.
+        * Return an error or implement proper error handling instead.
+        * 
+        * DO NOT ship this mock data in a production release!
+        ***************************************************************************/
         
         // Fallback to graceful degradation
         return { 
@@ -227,6 +269,17 @@ export const ExternalApiService = {
         }
       }
       
+      /***************************************************************************
+      * ⚠️⚠️⚠️ PRODUCTION CHANGE NEEDED ⚠️⚠️⚠️
+      * 
+      * Replace with a proper secure API implementation:
+      * 1. DO NOT include API keys in frontend code
+      * 2. Use a backend proxy or serverless function
+      * 3. Set up proper CORS and security headers
+      * 
+      * See .env.example for the recommended approach
+      ***************************************************************************/
+      
       // For real implementation, use the eBay Finding API
       // In production, this would call your backend which would then call the eBay API
       const url = `https://svcs.ebay.com/services/search/FindingService/v1?OPERATION-NAME=findItemsByKeywords&SERVICE-VERSION=1.0.0&SECURITY-APPNAME=${process.env.EBAY_APP_ID}&RESPONSE-DATA-FORMAT=JSON&keywords=${encodeURIComponent(query)}&paginationInput.entriesPerPage=10`;
@@ -267,6 +320,15 @@ export const ExternalApiService = {
         return { success: true, data: products };
       } catch (apiError) {
         console.error('eBay API error:', apiError);
+        
+        /***************************************************************************
+        * ⚠️⚠️⚠️ REMOVE FOR PRODUCTION ⚠️⚠️⚠️
+        * 
+        * This mock data fallback should be removed in production.
+        * Return an error or implement proper error handling instead.
+        * 
+        * DO NOT ship this mock data in a production release!
+        ***************************************************************************/
         
         // Fallback to graceful degradation
         return { 
@@ -322,6 +384,17 @@ export const ExternalApiService = {
         }
       }
       
+      /***************************************************************************
+      * ⚠️⚠️⚠️ PRODUCTION CHANGE NEEDED ⚠️⚠️⚠️
+      * 
+      * Replace with a proper secure API implementation:
+      * 1. DO NOT include API keys in frontend code
+      * 2. Use a backend proxy or serverless function
+      * 3. Set up proper CORS and security headers
+      * 
+      * See .env.example for the recommended approach
+      ***************************************************************************/
+      
       // For real implementation, use Bridge Interactive API (owned by Zillow)
       // In production, this would call your backend which would then call the Zillow API
       const url = `https://api.bridgedataoutput.com/api/v2/OData/test/Property?access_token=${process.env.BRIDGE_API_KEY}&$filter=City eq '${encodeURIComponent(location)}' and ListPrice le ${maxPrice}&$top=10`;
@@ -354,6 +427,15 @@ export const ExternalApiService = {
         return { success: true, data: properties };
       } catch (apiError) {
         console.error('Zillow API error:', apiError);
+        
+        /***************************************************************************
+        * ⚠️⚠️⚠️ REMOVE FOR PRODUCTION ⚠️⚠️⚠️
+        * 
+        * This mock data fallback should be removed in production.
+        * Return an error or implement proper error handling instead.
+        * 
+        * DO NOT ship this mock data in a production release!
+        ***************************************************************************/
         
         // Fallback to graceful degradation
         return { 

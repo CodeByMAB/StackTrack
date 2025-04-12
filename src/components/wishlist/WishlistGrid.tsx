@@ -1,14 +1,16 @@
 import { SimpleGrid, Text, Box, Flex, Center, Spinner, useColorMode } from '@chakra-ui/react';
 import { WishlistCard } from './WishlistCard';
-import { WishlistItem } from '../../types/models';
+import { WishlistItem, Category } from '../../types/models';
+import { mockCategories } from './MockData';
 
 interface WishlistGridProps {
   items: WishlistItem[];
   isLoading?: boolean;
   onItemClick?: (item: WishlistItem) => void;
+  categories?: Category[];
 }
 
-export const WishlistGrid = ({ items, isLoading = false, onItemClick }: WishlistGridProps) => {
+export const WishlistGrid = ({ items, isLoading = false, onItemClick, categories = mockCategories }: WishlistGridProps) => {
   const { colorMode } = useColorMode();
 
   if (isLoading) {
@@ -52,6 +54,7 @@ export const WishlistGrid = ({ items, isLoading = false, onItemClick }: Wishlist
         <WishlistCard 
           key={item.id} 
           item={item} 
+          categories={categories}
           onClick={onItemClick ? () => onItemClick(item) : undefined}
         />
       ))}

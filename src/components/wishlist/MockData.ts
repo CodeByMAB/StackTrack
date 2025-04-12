@@ -1,5 +1,16 @@
 import { WishlistItem, Category } from '../../types/models';
 
+/***************************************************************************
+ * ⚠️⚠️⚠️ REMOVE FOR PRODUCTION ⚠️⚠️⚠️
+ * 
+ * The mock data in this file should be removed or disabled in production.
+ * Use real data from your backend API or IndexedDB instead.
+ * 
+ * If you need to keep this for development/testing, add a conditional:
+ * if (import.meta.env.DEV) { ... } 
+ * 
+ ***************************************************************************/
+
 // Mock categories based on project requirements
 export const mockCategories: Category[] = [
   {

@@ -1,21 +1,32 @@
-import { Box, Container, VStack, Heading, Text, useColorMode, Button, Tabs, TabList, TabPanels, Tab, TabPanel, useDisclosure, useToast, HStack, Flex } from '@chakra-ui/react';
+import { Box, Container, VStack, Heading, Text, useColorMode, Button, Tabs, TabList, TabPanels, Tab, TabPanel, useDisclosure, useToast, Flex } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WishlistDashboard } from '../components/wishlist/WishlistDashboard';
 import { ItemFormModal } from '../components/wishlist/ItemFormModal';
 import { BitcoinPrice } from '../components/BitcoinPrice';
-import { NostrProfile, WishlistItem } from '../types/models';
+import { WishlistItem } from '../types/models';
 import { v4 as uuidv4 } from 'uuid';
 import { mockWishlistItems } from '../components/wishlist/MockData';
 import { SecurityService } from '../services/SecurityService';
+import { useAuth } from '../contexts/AuthContext';
 
 const Dashboard = () => {
   const { colorMode } = useColorMode();
   const navigate = useNavigate();
   const toast = useToast();
-  const [profile, setProfile] = useState<NostrProfile | null>(null);
-  const [pubkey, setPubkey] = useState<string | null>(null);
+  const { profile, pubkey } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
+  /***************************************************************************
+   * ⚠️⚠️⚠️ PRODUCTION CHANGE NEEDED ⚠️⚠️⚠️
+   * 
+   * For production:
+   * 1. Use IndexedDB instead of localStorage for better offline support
+   * 2. Remove references to mockWishlistItems
+   * 3. Consider implementing a proper sync mechanism with backend if needed
+   * 
+   * See the IndexedDBService for proper implementation
+   ***************************************************************************/
+  
   // Initialize wishlist items from localStorage or use mock data as fallback
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>(() => {
     const savedItems = localStorage.getItem('wishlist_items');
@@ -38,25 +49,19 @@ const Dashboard = () => {
       return;
     }
     
-    // Get the stored pubkey and profile
-    const storedPubkey = localStorage.getItem('nostr_pubkey');
-    const storedProfile = localStorage.getItem('nostr_profile');
+    // Refresh the authentication timer
+    SecurityService.refreshAuthentication();
     
-    if (storedPubkey) {
-      setPubkey(storedPubkey);
-      
-      // Refresh the authentication timer
-      SecurityService.refreshAuthentication();
-    }
-
-    if (storedProfile) {
-      try {
-        const parsedProfile = JSON.parse(storedProfile);
-        setProfile(parsedProfile);
-      } catch (e) {
-        console.error('Failed to parse stored profile:', e);
+    // Set up interval to periodically refresh authentication
+    const refreshInterval = setInterval(() => {
+      if (SecurityService.isAuthenticated()) {
+        SecurityService.refreshAuthentication();
       }
-    }
+    }, 5 * 60 * 1000); // Refresh every 5 minutes
+    
+    return () => {
+      clearInterval(refreshInterval);
+    };
   }, [navigate]);
 
   // Handle adding an item
@@ -91,8 +96,11 @@ const Dashboard = () => {
   }, [wishlistItems]);
   
   // Handle logout
+  const { logout } = useAuth();
+  
   const handleLogout = () => {
     SecurityService.clearAuthData();
+    logout();
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
@@ -100,7 +108,6 @@ const Dashboard = () => {
       duration: 3000,
       isClosable: true,
     });
-    navigate('/');
   };
 
   // Handle saving an item (new or edited)
@@ -129,9 +136,13 @@ const Dashboard = () => {
         name: itemData.name || 'Unnamed Item',
         description: itemData.description,
         price: itemData.price || 0,
-        currency: itemData.currency as 'USD' || 'USD',
-        satsEquivalent: itemData.satsEquivalent,
-        priority: itemData.priority as 'low' | 'medium' | 'high' || 'medium',
+        currency: (itemData.currency && ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY'].includes(itemData.currency as string)) 
+          ? (itemData.currency as 'USD' | 'EUR' | 'GBP' | 'CAD' | 'AUD' | 'JPY') 
+          : 'USD',
+        satsEquivalent: typeof itemData.satsEquivalent === 'number' ? itemData.satsEquivalent : undefined,
+        priority: (itemData.priority && ['low', 'medium', 'high'].includes(itemData.priority as string))
+          ? (itemData.priority as 'low' | 'medium' | 'high')
+          : 'medium',
         category: itemData.category,
         url: itemData.url,
         imageUrl: itemData.imageUrl,
@@ -176,7 +187,7 @@ const Dashboard = () => {
                 lineHeight="shorter"
                 mb={2}
               >
-                Welcome back, {profile?.name || 'stacker'}!
+                Welcome back, {profile?.name || (profile?.['nip05'] ? profile['nip05'].split('@')[0] : null) || pubkey?.substring(0, 8) || 'stacker'}!
               </Heading>
               <Text
                 fontSize={{ base: "md", sm: "lg" }}
@@ -255,7 +266,7 @@ const Dashboard = () => {
                       <Heading as="h4" size="md" mb={3}>Account</Heading>
                       <Flex direction="column" gap={2} className="account-details">
                         <Text fontSize="sm">
-                          Logged in as: <Text as="span" fontWeight="bold">{profile?.name || 'Bitcoin User'}</Text>
+                          Logged in as: <Text as="span" fontWeight="bold">{profile?.name || profile?.['display_name'] || 'Bitcoin User'}</Text>
                         </Text>
                         <Text fontSize="sm">
                           Public Key: <Text as="span" fontWeight="medium" color="gray.500" maxW="300px" isTruncated className="pubkey privacy-sensitive">{pubkey}</Text>

@@ -30,6 +30,7 @@ import { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import NDK from '@nostr-dev-kit/ndk';
 import { nip19 } from 'nostr-tools';
 import { NostrProfile, NostrLoginMethod } from '../types/models';
+import { useAuth } from '../contexts/AuthContext';
 import { FaBolt, FaKey, FaPlug, FaUserCircle } from 'react-icons/fa';
 
 interface NostrLoginProps {
@@ -57,6 +58,7 @@ const RELAY_CONNECTION_TIMEOUT = 5000;
 const MIN_CONNECTED_RELAYS = 1;
 
 const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin }, ref) => {
+  const { login } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { colorMode } = useColorMode();
   const [activeTab, setActiveTab] = useState<NostrLoginMethod>('nsec');
@@ -239,8 +241,10 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
       // Security note: We never store the private key
       localStorage.setItem('nostr_pubkey', pubkey);
       localStorage.setItem('nostr_profile', JSON.stringify(profile));
+      localStorage.setItem('nostr_auth_timestamp', Date.now().toString());
 
-      // Call the onLogin callback with pubkey and profile
+      // Call both the AuthContext login and component-specific onLogin callback
+      login(pubkey, profile);
       onLogin(pubkey, profile);
       onClose();
     } catch (err) {
@@ -304,8 +308,10 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
         localStorage.setItem('nostr_pubkey', pubkey);
         localStorage.setItem('nostr_profile', JSON.stringify(profile));
         localStorage.setItem('nostr_login_method', 'nos2x');
+        localStorage.setItem('nostr_auth_timestamp', Date.now().toString());
         
-        // Call the onLogin callback
+        // Call both the AuthContext login and component-specific onLogin callback
+        login(pubkey, profile);
         onLogin(pubkey, profile);
         onClose();
       } catch (err) {
@@ -376,8 +382,10 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
         localStorage.setItem('nostr_pubkey', pubkey);
         localStorage.setItem('nostr_profile', JSON.stringify(profile));
         localStorage.setItem('nostr_login_method', 'alby');
+        localStorage.setItem('nostr_auth_timestamp', Date.now().toString());
         
-        // Call the onLogin callback
+        // Call both the AuthContext login and component-specific onLogin callback
+        login(pubkey, profile);
         onLogin(pubkey, profile);
         onClose();
       } catch (err) {
@@ -393,6 +401,18 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
     }
   };
 
+  /***************************************************************************
+   * ⚠️⚠️⚠️ PRODUCTION IMPLEMENTATION NEEDED ⚠️⚠️⚠️
+   * 
+   * Before going live, implement a real NWC login flow:
+   * 1. Create proper NWC connection using nostr-tools
+   * 2. Handle connection errors gracefully
+   * 3. Store connection info securely
+   * 4. Add ability to reconnect to existing NWC connections
+   * 
+   * See https://nwc.getalby.com/v1/demo for implementation examples
+   ***************************************************************************/
+  
   // Handle login with Nostr Wallet Connect (NWC)
   const handleNWCLogin = async () => {
     setIsLoading(true);

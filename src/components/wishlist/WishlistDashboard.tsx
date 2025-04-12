@@ -30,46 +30,21 @@ export const WishlistDashboard = ({ items = mockWishlistItems, onAddItem, onEdit
   const [sortBy, setSortBy] = useState('createdAt');
   const [filteredItems, setFilteredItems] = useState<WishlistItem[]>(items);
   
-  // Update filtered items when items prop changes
+  // Update filtered items when items prop changes or sort option changes
   useEffect(() => {
+    let result = [...items];
+    
+    // Apply search filter if exists
     if (searchQuery) {
-      // Apply current search filter to new items
-      const filtered = items.filter(item => 
+      result = result.filter(item => 
         item.name.toLowerCase().includes(searchQuery) || 
         item.description?.toLowerCase().includes(searchQuery)
       );
-      setFilteredItems(filtered);
-    } else {
-      setFilteredItems(items);
-    }
-  }, [items, searchQuery]);
-  
-  // Filter and sort items
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value.toLowerCase();
-    setSearchQuery(query);
-    
-    if (!query) {
-      setFilteredItems(mockWishlistItems);
-      return;
     }
     
-    const filtered = mockWishlistItems.filter(item => 
-      item.name.toLowerCase().includes(query) || 
-      item.description?.toLowerCase().includes(query)
-    );
-    
-    setFilteredItems(filtered);
-  };
-  
-  // Handle sort change
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const sortOption = e.target.value;
-    setSortBy(sortOption);
-    
-    // Sort the items
-    const sorted = [...filteredItems].sort((a, b) => {
-      switch (sortOption) {
+    // Apply sorting
+    result = [...result].sort((a, b) => {
+      switch (sortBy) {
         case 'priceLowToHigh':
           return a.price - b.price;
         case 'priceHighToLow':
@@ -82,7 +57,31 @@ export const WishlistDashboard = ({ items = mockWishlistItems, onAddItem, onEdit
       }
     });
     
-    setFilteredItems(sorted);
+    setFilteredItems(result);
+  }, [items, searchQuery, sortBy]);
+  
+  // Filter and sort items
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+    
+    if (!query) {
+      setFilteredItems(items);
+      return;
+    }
+    
+    const filtered = items.filter(item => 
+      item.name.toLowerCase().includes(query) || 
+      item.description?.toLowerCase().includes(query)
+    );
+    
+    setFilteredItems(filtered);
+  };
+  
+  // Handle sort change
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    // Just update the sort option, the useEffect will handle the actual sorting
+    setSortBy(e.target.value);
   };
   
   return (

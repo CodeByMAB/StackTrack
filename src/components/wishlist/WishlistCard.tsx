@@ -1,14 +1,15 @@
 import { Box, Heading, Text, Badge, Image, Flex, useColorMode, Icon, HStack } from '@chakra-ui/react';
 import { FaBitcoin } from 'react-icons/fa';
-import { WishlistItem } from '../../types/models';
+import { WishlistItem, Category } from '../../types/models';
 import { mockCategories } from './MockData';
 
 interface WishlistCardProps {
   item: WishlistItem;
   onClick?: () => void;
+  categories?: Category[];
 }
 
-export const WishlistCard = ({ item, onClick }: WishlistCardProps) => {
+export const WishlistCard = ({ item, onClick, categories = mockCategories }: WishlistCardProps) => {
   const { colorMode } = useColorMode();
   
   // Format price
@@ -30,12 +31,12 @@ export const WishlistCard = ({ item, onClick }: WishlistCardProps) => {
   };
   
   // Find category name
-  const category = mockCategories.find(cat => cat.id === item.category);
+  const category = categories.find(cat => cat.id === item.category);
   
-  // Category badge colors from our mockCategories
+  // Category badge colors from our categories
   const getCategoryColor = (categoryId: string | undefined) => {
     if (!categoryId) return 'gray';
-    const cat = mockCategories.find(c => c.id === categoryId);
+    const cat = categories.find(c => c.id === categoryId);
     return cat?.color || 'gray';
   };
   

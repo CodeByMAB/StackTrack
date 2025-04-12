@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SecurityService } from '../services/SecurityService';
 
 // Define the NostrProfile interface
 export interface NostrProfile {
@@ -32,23 +33,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check login status on mount
   useEffect(() => {
-    const storedPubkey = localStorage.getItem('nostr_pubkey');
-    const storedProfile = localStorage.getItem('nostr_profile');
-    
-    if (storedPubkey) {
-      setPubkey(storedPubkey);
-      setIsLoggedIn(true);
+    // Function to check auth status
+    const checkAuthStatus = () => {
+      const storedPubkey = localStorage.getItem('nostr_pubkey');
+      const storedProfile = localStorage.getItem('nostr_profile');
+      const authTimestamp = localStorage.getItem('nostr_auth_timestamp');
       
-      if (storedProfile) {
-        try {
-          setProfile(JSON.parse(storedProfile));
-        } catch (e) {
-          console.error('Failed to parse stored profile:', e);
+      // Check for valid authentication
+      const isAuth = storedPubkey && authTimestamp && 
+        parseInt(authTimestamp, 10) + SecurityService.AUTH_TOKEN_EXPIRY > Date.now();
+      
+      if (isAuth && storedPubkey) {
+        setPubkey(storedPubkey);
+        setIsLoggedIn(true);
+        
+        if (storedProfile) {
+          try {
+            setProfile(JSON.parse(storedProfile));
+          } catch (e) {
+            console.error('Failed to parse stored profile:', e);
+          }
         }
+      } else {
+        // Clear potentially invalid data
+        setPubkey(null);
+        setProfile(null);
+        setIsLoggedIn(false);
       }
-    }
+      
+      setIsLoading(false);
+    };
     
-    setIsLoading(false);
+    // Initial check
+    checkAuthStatus();
+    
+    // Listen for storage events (in case another tab logs in/out)
+    const handleStorageChange = (event: StorageEvent) => {
+      if (['nostr_pubkey', 'nostr_profile', 'nostr_auth_timestamp'].includes(event.key || '')) {
+        checkAuthStatus();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   // Login function
@@ -62,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Store authentication data
     localStorage.setItem('nostr_pubkey', newPubkey);
     localStorage.setItem('nostr_profile', JSON.stringify(newProfile));
+    localStorage.setItem('nostr_auth_timestamp', Date.now().toString());
     
     // Update state
     setPubkey(newPubkey);
@@ -77,6 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Clear stored data
     localStorage.removeItem('nostr_pubkey');
     localStorage.removeItem('nostr_profile');
+    localStorage.removeItem('nostr_auth_timestamp');
+    localStorage.removeItem('nostr_login_method');
     
     // Update state
     setPubkey(null);

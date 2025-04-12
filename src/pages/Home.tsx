@@ -16,6 +16,7 @@ const Home = () => {
       position="relative" 
       h="full"
       minH="calc(100vh - 200px)" // Account for navbar and footer height
+      width="100%"
     >
       {/* Hero Image Background */}
       <Box
@@ -24,15 +25,19 @@ const Home = () => {
         left={0}
         right={0}
         bottom={0}
+        width="100vw"
+        height="100vh"
         zIndex={0}
         bg={colorMode === 'light' ? 'white' : '#051323'}
+        overflow="hidden"
       >
         <Image
           src={heroImage}
           alt=""
-          w="full"
-          h="full"
+          w="100%"
+          h="100%"
           objectFit="cover"
+          objectPosition="center"
           opacity={colorMode === 'light' ? 0.9 : 0.7}
           filter="contrast(1.1) saturate(1.2)"
         />
@@ -42,6 +47,8 @@ const Home = () => {
           left={0}
           right={0}
           bottom={0}
+          width="100vw"
+          height="100vh"
           bg={colorMode === 'light' ? 'whiteAlpha.300' : 'blackAlpha.300'}
           zIndex={1}
           backdropFilter="contrast(1.1) saturate(1.1)"

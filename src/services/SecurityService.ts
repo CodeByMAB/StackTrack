@@ -9,7 +9,7 @@
  */
 
 // Time for authentication token expiration (1 week)
-const AUTH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000;
+export const AUTH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000;
 
 // Security-critical storage keys
 const SECURE_KEYS = [
