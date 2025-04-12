@@ -1,10 +1,21 @@
-import stacktrackIcon from '../assets/stacktrack-icon.svg'
-import { Box } from '@chakra-ui/react'
+import { Box } from '@chakra-ui/react';
+import { Link } from 'react-router-dom';
+import stacktrackIcon from '../assets/stacktrack-icon.svg';
 
 const Logo = () => {
   return (
-    <Box as="img" src={stacktrackIcon} alt="StackTrack Logo" width="48px" height="48px" />
-  )
-}
+    <Link to="/">
+      <Box
+        as="img"
+        src={stacktrackIcon}
+        alt="StackTrack Logo"
+        h={{ base: "32px", md: "40px" }}
+        w="auto"
+        transition="all 0.2s"
+        _hover={{ transform: 'scale(1.05)' }}
+      />
+    </Link>
+  );
+};
 
-export default Logo
+export default Logo;

@@ -33,21 +33,26 @@ const Footer = () => {
             <Link 
               color={colorMode === 'light' ? 'gray.600' : 'whiteAlpha.800'}
               _hover={{ color: colorMode === 'light' ? 'gray.800' : 'white' }}
-              fontSize="sm"
+              fontWeight="medium"
+              href="/privacy"
             >
               Privacy
             </Link>
+            <Text color={colorMode === 'light' ? 'gray.500' : 'whiteAlpha.600'}>•</Text>
             <Link 
               color={colorMode === 'light' ? 'gray.600' : 'whiteAlpha.800'}
               _hover={{ color: colorMode === 'light' ? 'gray.800' : 'white' }}
-              fontSize="sm"
+              fontWeight="medium"
+              href="/terms"
             >
               Terms
             </Link>
+            <Text color={colorMode === 'light' ? 'gray.500' : 'whiteAlpha.600'}>•</Text>
             <Link 
               color={colorMode === 'light' ? 'gray.600' : 'whiteAlpha.800'}
               _hover={{ color: colorMode === 'light' ? 'gray.800' : 'white' }}
-              fontSize="sm"
+              fontWeight="medium"
+              href="/support"
             >
               Support
             </Link>
@@ -87,6 +92,8 @@ const Footer = () => {
               color={colorMode === 'light' ? 'gray.600' : 'whiteAlpha.800'}
               _hover={{ color: colorMode === 'light' ? 'gray.800' : 'white' }}
               fontWeight="medium"
+              href="https://nostr.com/"
+              isExternal
             >
               NOSTR
             </Link>
@@ -95,6 +102,8 @@ const Footer = () => {
               color={colorMode === 'light' ? 'gray.600' : 'whiteAlpha.800'}
               _hover={{ color: colorMode === 'light' ? 'gray.800' : 'white' }}
               fontWeight="medium"
+              href="https://utxo.live/oracle/"
+              isExternal
             >
               UTXOracle
             </Link>
@@ -103,6 +112,8 @@ const Footer = () => {
               color={colorMode === 'light' ? 'gray.600' : 'whiteAlpha.800'}
               _hover={{ color: colorMode === 'light' ? 'gray.800' : 'white' }}
               fontWeight="medium"
+              href="https://github.com/block/bitcoin-treasury"
+              isExternal
             >
               Block API
             </Link>
