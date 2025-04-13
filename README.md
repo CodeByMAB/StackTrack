@@ -1,28 +1,41 @@
-# StackTrack
+# 🟡 StackTrack
 
-A Bitcoin-focused progressive web app for tracking your wishlist items and saving in sats. Built with React, TypeScript, and Chakra UI.
+**Track your dreams. One sat at a time.**  
+A privacy-first Bitcoin wishlist tracker, built for sovereignty and simplicity.  
+Denominated in sats. Powered by NOSTR. Runs offline.
 
-## Features
+---
 
-- Track items you wish to purchase denominated in sats
-- Offline-first capability with localStorage persistence
-- NOSTR login for identity management
-- Bitcoin price tracking
-- Beautiful dark/light mode with full responsiveness
-- Full wishlist management (add, edit, delete items)
+## 🚀 Features
 
-## Technologies
+- 🧾 Add wishlist items priced in fiat, auto-converted to sats
+- 🔐 Login with [NOSTR](https://nostr.com) — no email, no passwords
+- 🌐 Works offline-first with localStorage caching
+- 📊 Bitcoin price fetched via [Block's Bitcoin Treasury API](https://github.com/block/bitcoin-treasury)
+- 🌓 Light and dark modes with full responsiveness
+- 📂 Organize items by category: Home, Car, Gear, Dream, Misc
+- 🧼 Zero trackers, zero ads — just your stack and your goals
 
-- React 19 + TypeScript
-- Vite 6
-- Chakra UI for component styling
-- NOSTR integration via NDK
-- Bitcoin Treasury API for price data
-- Offline-capable with graceful degradation
+---
 
-## Getting Started
+## 🧱 Tech Stack
+
+- ⚛️ **React 19** + **TypeScript**
+- ⚡ **Vite 6**
+- 🎨 **Chakra UI**
+- 🟡 **NOSTR** (via NDK)
+- 📈 **Block API** (price data)
+- 🔒 **LocalStorage** (offline + privacy-respecting)
+
+---
+
+## 📦 Getting Started
 
 ```bash
+# Clone the repo
+git clone https://github.com/CodeByMAB/StackTrack.git
+cd StackTrack
+
 # Install dependencies
 npm install
 
@@ -33,16 +46,14 @@ npm run dev
 npm run build
 ```
 
-## Testing Offline Functionality
+---
 
-StackTrack is designed to work offline. You can test this functionality in several ways:
+## 🧪 Offline + Testing
 
-1. **Test with no connection**: Turn off your network connection and continue using the app.
+You can test offline functionality and login simulation directly from your browser:
 
-2. **Dummy Login**: If you don't have a Nostr key or can't connect to Nostr relays, open your browser console and paste the following to create a dummy test login:
-
-```javascript
-// Run this script in the browser console for dummy test login
+### 🔧 Create Dummy Login
+```js
 const dummyPubkey = "npub1" + Array.from({length: 30}, () => 
   "0123456789abcdef"[Math.floor(Math.random() * 16)]).join('');
 
@@ -52,15 +63,13 @@ const dummyProfile = {
   picture: "https://api.dicebear.com/7.x/bottts/svg?seed=stacktrack"
 };
 
-// Store in localStorage 
 localStorage.setItem('nostr_pubkey', dummyPubkey);
 localStorage.setItem('nostr_profile', JSON.stringify(dummyProfile));
 console.log('Test login created! Refresh the page to use it.');
 ```
 
-3. **Dummy Bitcoin Price**: To test the Bitcoin price component with a static value:
-
-```javascript
+### 💸 Set Dummy Bitcoin Price
+```js
 localStorage.setItem('stacktrack_bitcoin_price', JSON.stringify({
   usd: 62345.78,
   timestamp: Date.now() - 1000 * 60 * 20  // 20 minutes ago (expired)
@@ -68,13 +77,43 @@ localStorage.setItem('stacktrack_bitcoin_price', JSON.stringify({
 console.log('Dummy bitcoin price set in localStorage');
 ```
 
-## Security Features
+---
 
-- Private keys are never stored anywhere
-- Only public keys and minimal profile data are stored in localStorage
-- Input sanitization prevents XSS and data injection
-- Offline-first approach reduces network exposure
+## 🛡️ Security Philosophy
 
-## License
+- Your **keys are never stored**
+- Only public data (like `npub` and avatar URL) are saved locally
+- All data is stored client-side, with no backend required
+- Input is sanitized to prevent XSS and malicious injection
+- Offline-first = minimal network exposure
 
-[MIT License](LICENSE)
+---
+
+## 📸 Screenshots
+
+### 🏠 Home Page
+![Home Page - Light Mode](src/assets/screenshots/HomePage_iPad_light.png)
+![Home Page - Dark Mode](src/assets/screenshots/HomePage_iPad_dark.png)
+![Home Page - Login Modal](src/assets/screenshots/HomePage_login.png)
+
+### 📊 Dashboard
+![Dashboard - Dark Mode](src/assets/screenshots/Dashboard_dark.png)
+![Dashboard - Add Item Modal](src/assets/screenshots/Dashboard_AddItem_dark.png)
+![Dashboard - Edit Item Modal](src/assets/screenshots/Dashboard_EditItem_dark.png)
+
+---
+
+## 🤝 Contributing
+
+PRs welcome! Open an issue, fork the repo, and help us build the wishlist stacker Bitcoiners deserve.
+
+---
+
+## 📝 License
+
+[MIT](./LICENSE)
+
+---
+
+> Built for Bitcoiners. Powered by open-source.  
+> NOSTR in. Fiat out. Stack on. ⚡

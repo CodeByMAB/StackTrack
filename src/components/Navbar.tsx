@@ -1,4 +1,4 @@
-import { Box, Flex, HStack, Button, Text, useColorMode, IconButton, Menu, MenuButton, MenuList, MenuItem, Avatar, Tooltip } from '@chakra-ui/react';
+import { Box, Flex, HStack, Button, Text, useColorMode, IconButton, Menu, MenuButton, MenuList, MenuItem, Avatar, Tooltip, Heading } from '@chakra-ui/react';
 import { HamburgerIcon } from '@chakra-ui/icons';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useRef } from 'react';
@@ -115,10 +115,10 @@ const Navbar = () => {
 
   const LoggedOutNavItems = () => (
     <>
-      <Button
+      <Button 
         as={Link}
         to="/about"
-        variant="ghost"
+        variant="ghost" 
         color={colorMode === 'light' ? 'gray.700' : 'white'}
         fontSize={{ base: "sm", md: "md" }}
         px={{ base: 1, md: 3 }}
@@ -128,10 +128,18 @@ const Navbar = () => {
       >
         About
       </Button>
-      <NostrLoginEnhanced ref={loginRef} onLogin={() => {
-        // The login is now handled by the AuthContext inside NostrLoginEnhanced
-        // This callback is kept for backward compatibility
-      }} />
+      <Button
+        colorScheme="orange"
+        variant="solid"
+        fontSize={{ base: "sm", md: "md" }}
+        px={{ base: 4, md: 6 }}
+        _hover={{
+          bg: colorMode === 'light' ? 'orange.600' : 'orange.400'
+        }}
+        onClick={() => loginRef.current?.openModal()}
+      >
+        Login with Nostr
+      </Button>
     </>
   );
 
@@ -258,54 +266,53 @@ const Navbar = () => {
         align="center"
         gap={4}
       >
-        <Flex align="center" gap={2} flexShrink={0}>
+        <Box 
+          as={Link} 
+          to={isLoggedIn ? "/dashboard" : "/"} 
+          onClick={handleLogoClick}
+          display="flex"
+          alignItems="center"
+          gap={2}
+          _hover={{ textDecoration: 'none' }}
+        >
           <Logo />
-          <Box
-            as="a"
-            href="/"
-            onClick={handleLogoClick}
-            _hover={{ textDecoration: 'none' }}
+          <Heading 
+            as="h1" 
+            size="md" 
+            color={colorMode === 'light' ? 'gray.700' : 'white'}
+            display={{ base: 'none', md: 'block' }}
           >
-            <Text
-              color={colorMode === 'light' ? 'gray.800' : 'white'}
-              fontSize={{ base: "md", md: "xl" }}
-              fontWeight="semibold"
-              letterSpacing="tight"
-              _hover={{
-                color: colorMode === 'light' ? 'orange.500' : 'orange.300'
-              }}
-              cursor={isLoggedIn ? 'pointer' : 'default'}
-            >
-              StackTrack
-            </Text>
-          </Box>
-        </Flex>
-
-        {/* Desktop Navigation */}
+            StackTrack
+          </Heading>
+        </Box>
         <HStack 
-          spacing={{ base: 0, sm: 1, md: 4, lg: 6 }} 
+          spacing={4} 
           display={{ base: 'none', md: 'flex' }}
-          flex="1"
-          justify="flex-end"
+          position="absolute"
+          right="12%"
         >
           {isLoggedIn ? <LoggedInNavItems /> : <LoggedOutNavItems />}
-          <ThemeToggle />
         </HStack>
-
-        {/* Mobile Navigation */}
-        <Box display={{ base: 'block', md: 'none' }}>
-          <Menu>
-            <MenuButton
-              as={IconButton}
-              aria-label="Navigation menu"
-              icon={<HamburgerIcon />}
-              variant="ghost"
-              color={colorMode === 'light' ? 'gray.700' : 'white'}
-            />
-            {isLoggedIn ? <LoggedInMobileMenu /> : <LoggedOutMobileMenu />}
-          </Menu>
-        </Box>
+        <HStack spacing={2}>
+          <ThemeToggle />
+          <Box display={{ base: 'block', md: 'none' }}>
+            <Menu>
+              <MenuButton
+                as={IconButton}
+                aria-label="Menu"
+                icon={<HamburgerIcon />}
+                variant="ghost"
+                color={colorMode === 'light' ? 'gray.700' : 'white'}
+              />
+              {isLoggedIn ? <LoggedInMobileMenu /> : <LoggedOutMobileMenu />}
+            </Menu>
+          </Box>
+        </HStack>
       </Flex>
+      <NostrLoginEnhanced ref={loginRef} onLogin={() => {
+        // The login is now handled by the AuthContext inside NostrLoginEnhanced
+        // This callback is kept for backward compatibility
+      }} />
     </Box>
   );
 };
