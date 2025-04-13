@@ -16,27 +16,25 @@ import {
   Box,
   Link,
   VStack,
-  HStack,
   Tab,
   TabList,
   TabPanel,
   TabPanels,
   Tabs,
   Image,
-  Icon,
-  Divider
+  Icon
 } from '@chakra-ui/react';
 import { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import NDK from '@nostr-dev-kit/ndk';
-import { nip19, getPublicKey, generatePrivateKey } from 'nostr-tools';
-import { NostrProfile, NostrLoginMethod } from '../types/models';
+import { nip19, getPublicKey } from 'nostr-tools';
+import type { NostrProfile, NostrLoginMethod } from '../types/models';
 import { useAuth } from '../contexts/AuthContext';
 import { FaBolt, FaKey, FaPlug, FaUserCircle } from 'react-icons/fa';
 import nos2xLogo from '../assets/nos2x-logo.png';
 import albyLogo from '../assets/getalby-logo.png';
 
 interface NostrLoginProps {
-  onLogin: (pubkey: string, profile: NostrProfile) => void;
+  onLogin?: (pubkey: string, profile: NostrProfile) => void;
 }
 
 interface NostrLoginRef {
@@ -68,7 +66,7 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [connectingStatus, setConnectingStatus] = useState('');
-  const initialRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const ndkRef = useRef<NDK | null>(null);
 
   useImperativeHandle(ref, () => ({
@@ -163,8 +161,6 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
   // Handle login with private key (nsec)
   const handleNsecLogin = async () => {
     if (!privateKey) {
-      // For development only - you can uncomment this line to use a test key
-      // setPrivateKey("nsec1vl029mgpspedva04g90vltkh6fvh240zqtv9k0t9af8935ke9laq5nstk2");
       setError('Please enter your private key');
       return;
     }
@@ -195,7 +191,6 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
       
       // Step 2: Derive the public key from the private key
       try {
-        // Use the direct nostr-tools function to get the public key
         const pubkeyHex = getPublicKey(decodedData);
         
         if (!pubkeyHex) {
@@ -210,17 +205,10 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
           about: 'A Nostr user passionate about Bitcoin'
         };
         
-        // Step 4: Store authentication data
-        localStorage.setItem('nostr_pubkey', pubkeyHex);
-        localStorage.setItem('nostr_profile', JSON.stringify(profile));
-        localStorage.setItem('nostr_auth_timestamp', Date.now().toString());
-        localStorage.setItem('nostr_login_method', 'nsec');
-        
         setConnectingStatus('Login successful!');
         
-        // Step 5: Call the auth callbacks
-        login(pubkeyHex, profile);
-        onLogin(pubkeyHex, profile);
+        // Step 4: Call the auth context login
+        login(pubkeyHex, profile, 'nsec');
         onClose();
       } catch (err) {
         console.error('Error during key derivation:', err);
@@ -283,15 +271,8 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
           }
         }
         
-        // Store the pubkey and profile in localStorage
-        localStorage.setItem('nostr_pubkey', pubkey);
-        localStorage.setItem('nostr_profile', JSON.stringify(profile));
-        localStorage.setItem('nostr_login_method', 'nos2x');
-        localStorage.setItem('nostr_auth_timestamp', Date.now().toString());
-        
-        // Call both the AuthContext login and component-specific onLogin callback
-        login(pubkey, profile);
-        onLogin(pubkey, profile);
+        // Call the auth context login
+        login(pubkey, profile, 'nos2x');
         onClose();
       } catch (err) {
         console.error('nos2x error:', err);
@@ -357,15 +338,8 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
           console.log('Failed to get profile from NDK, using default', ndkErr);
         }
         
-        // Store the pubkey and profile in localStorage
-        localStorage.setItem('nostr_pubkey', pubkey);
-        localStorage.setItem('nostr_profile', JSON.stringify(profile));
-        localStorage.setItem('nostr_login_method', 'alby');
-        localStorage.setItem('nostr_auth_timestamp', Date.now().toString());
-        
-        // Call both the AuthContext login and component-specific onLogin callback
-        login(pubkey, profile);
-        onLogin(pubkey, profile);
+        // Call the auth context login
+        login(pubkey, profile, 'alby');
         onClose();
       } catch (err) {
         console.error('Alby error:', err);
@@ -433,7 +407,7 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
 
   return (
     <Modal
-      initialFocusRef={initialRef}
+      initialFocusRef={inputRef}
       isOpen={isOpen}
       onClose={onClose}
       isCentered
@@ -480,7 +454,7 @@ const NostrLoginEnhanced = forwardRef<NostrLoginRef, NostrLoginProps>(({ onLogin
                     </Text>
                     
                     <Input
-                      ref={initialRef}
+                      ref={inputRef}
                       placeholder="nsec1..."
                       value={privateKey}
                       onChange={(e) => setPrivateKey(e.target.value)}

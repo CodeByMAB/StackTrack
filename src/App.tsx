@@ -13,6 +13,7 @@ import Terms from './pages/Terms'
 import { useEffect, useState } from 'react'
 import { SecurityService } from './services/SecurityService'
 import { AuthProvider } from './contexts/AuthContext'
+import { UserProvider } from './contexts/UserContext'
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -102,41 +103,43 @@ function App() {
       <ColorModeScript initialColorMode={theme.config.initialColorMode} />
       <Router>
         <AuthProvider>
-          <Box 
-            minHeight="100vh"
-            width="100%"
-            display="flex" 
-            flexDirection="column"
-            bg={theme.config.initialColorMode === 'light' ? 'gray.50' : '#051323'}
-            overflow="hidden"
-            position="relative"
-          >
-            <Navbar />
+          <UserProvider>
             <Box 
-              flex="1" 
+              minHeight="100vh"
               width="100%"
               display="flex" 
               flexDirection="column"
-              overflow="auto"
+              bg={theme.config.initialColorMode === 'light' ? 'gray.50' : '#051323'}
+              overflow="hidden"
+              position="relative"
             >
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/support" element={<Support />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route 
-                  path="/dashboard" 
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-              </Routes>
+              <Navbar />
+              <Box 
+                flex="1" 
+                width="100%"
+                display="flex" 
+                flexDirection="column"
+                overflow="auto"
+              >
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/support" element={<Support />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route 
+                    path="/dashboard" 
+                    element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    } 
+                  />
+                </Routes>
+              </Box>
+              <Footer />
             </Box>
-            <Footer />
-          </Box>
+          </UserProvider>
         </AuthProvider>
       </Router>
     </ChakraProvider>

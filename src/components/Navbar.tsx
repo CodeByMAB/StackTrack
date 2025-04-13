@@ -1,23 +1,62 @@
-import { Box, Flex, HStack, Button, Text, useColorMode, IconButton, Menu, MenuButton, MenuList, MenuItem, Avatar } from '@chakra-ui/react';
+import { Box, Flex, HStack, Button, Text, useColorMode, IconButton, Menu, MenuButton, MenuList, MenuItem, Avatar, Tooltip } from '@chakra-ui/react';
 import { HamburgerIcon } from '@chakra-ui/icons';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useRef } from 'react';
 import Logo from './Logo';
 import NostrLoginEnhanced from './NostrLoginEnhanced';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
+import { useUser } from '../contexts/UserContext';
 
 const Navbar = () => {
   const { colorMode } = useColorMode();
   const location = useLocation();
+  const navigate = useNavigate();
   const { isLoggedIn, profile, logout } = useAuth();
+  const { userData } = useUser();
   const loginRef = useRef<{ openModal: () => void }>(null);
   
-  // Handle logout
-  const handleLogout = () => {
-    logout();
+  // Handle logo/text click
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isLoggedIn) {
+      navigate('/dashboard');
+    } else {
+      navigate('/');
+    }
   };
 
+  // Handle add item
+  const navbarAddItem = () => {
+    if (location.pathname === '/dashboard') {
+      // If we're already on the dashboard, open the add item modal
+      navigate('/dashboard');
+      // Use a small timeout to ensure the dashboard is mounted before triggering the modal
+      setTimeout(() => {
+        const event = new CustomEvent('openAddItemModal');
+        window.dispatchEvent(event);
+      }, 100);
+    } else {
+      // If we're not on the dashboard, navigate there first
+      navigate('/dashboard');
+      // Use a small timeout to ensure the dashboard is mounted before triggering the modal
+      setTimeout(() => {
+        const event = new CustomEvent('openAddItemModal');
+        window.dispatchEvent(event);
+      }, 100);
+    }
+  };
+
+  const UserAvatar = () => (
+    <Tooltip label={profile?.name || 'Bitcoin User'}>
+      <Avatar
+        size="sm"
+        name={profile?.name || 'BU'}
+        src={profile?.picture}
+        bg={colorMode === 'light' ? 'orange.500' : 'orange.300'}
+      />
+    </Tooltip>
+  );
 
   const LoggedInNavItems = () => {
     // Only show relevant nav items based on current route
@@ -25,6 +64,15 @@ const Navbar = () => {
     
     return (
       <>
+        {userData?.stats && (
+          <Text
+            fontSize="sm"
+            color={colorMode === 'light' ? 'gray.600' : 'gray.300'}
+            display={{ base: 'none', lg: 'block' }}
+          >
+            {userData.stats.totalItems} items · {userData.stats.totalValue} sats
+          </Text>
+        )}
         {isDashboard && (
           <Button
             variant="ghost"
@@ -35,6 +83,7 @@ const Navbar = () => {
             _hover={{
               bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
             }}
+            onClick={navbarAddItem}
           >
             Add Item
           </Button>
@@ -52,6 +101,14 @@ const Navbar = () => {
         >
           About
         </Button>
+        <Menu>
+          <MenuButton>
+            <UserAvatar />
+          </MenuButton>
+          <MenuList>
+            <MenuItem onClick={logout}>Logout</MenuItem>
+          </MenuList>
+        </Menu>
       </>
     );
   };
@@ -84,6 +141,30 @@ const Navbar = () => {
     
     return (
       <MenuList bg={colorMode === 'light' ? 'white' : '#051323'}>
+        <MenuItem 
+          icon={<UserAvatar />}
+          color={colorMode === 'light' ? 'gray.700' : 'white'}
+          bg={colorMode === 'light' ? 'white' : '#051323'}
+          _hover={{
+            bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
+          }}
+          fontSize="sm"
+          px={3}
+          isDisabled
+        >
+          {profile?.name || 'Bitcoin User'}
+        </MenuItem>
+        {userData?.stats && (
+          <MenuItem 
+            color={colorMode === 'light' ? 'gray.600' : 'gray.300'}
+            bg={colorMode === 'light' ? 'white' : '#051323'}
+            fontSize="sm"
+            px={3}
+            isDisabled
+          >
+            {userData.stats.totalItems} items · {userData.stats.totalValue} sats
+          </MenuItem>
+        )}
         {isDashboard && (
           <MenuItem 
             icon={<Box as="span" fontSize="24px">+</Box>}
@@ -94,6 +175,7 @@ const Navbar = () => {
             }}
             fontSize="sm"
             px={3}
+            onClick={navbarAddItem}
           >
             Add Item
           </MenuItem>
@@ -178,7 +260,12 @@ const Navbar = () => {
       >
         <Flex align="center" gap={2} flexShrink={0}>
           <Logo />
-          <Link to="/">
+          <Box
+            as="a"
+            href="/"
+            onClick={handleLogoClick}
+            _hover={{ textDecoration: 'none' }}
+          >
             <Text
               color={colorMode === 'light' ? 'gray.800' : 'white'}
               fontSize={{ base: "md", md: "xl" }}
@@ -187,10 +274,11 @@ const Navbar = () => {
               _hover={{
                 color: colorMode === 'light' ? 'orange.500' : 'orange.300'
               }}
+              cursor={isLoggedIn ? 'pointer' : 'default'}
             >
               StackTrack
             </Text>
-          </Link>
+          </Box>
         </Flex>
 
         {/* Desktop Navigation */}
@@ -199,93 +287,24 @@ const Navbar = () => {
           display={{ base: 'none', md: 'flex' }}
           flex="1"
           justify="flex-end"
-          ml={{ base: 0, md: 8 }}
         >
-          {isLoggedIn ? (
-            <>
-              <LoggedInNavItems />
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  variant="ghost"
-                  p={0}
-                  _hover={{ bg: 'transparent' }}
-                >
-                  <Avatar
-                    size="sm"
-                    src={profile?.picture}
-                    name={profile?.name || 'User'}
-                    bg={colorMode === 'light' ? 'gray.200' : 'whiteAlpha.200'}
-                  />
-                </MenuButton>
-                <MenuList bg={colorMode === 'light' ? 'white' : '#051323'}>
-                  <MenuItem 
-                    color={colorMode === 'light' ? 'gray.700' : 'white'}
-                    bg={colorMode === 'light' ? 'white' : '#051323'}
-                    _hover={{
-                      bg: colorMode === 'light' ? 'gray.100' : 'whiteAlpha.100'
-                    }}
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </MenuItem>
-                </MenuList>
-              </Menu>
-            </>
-          ) : (
-            <>
-              <LoggedOutNavItems />
-              <Button
-                size="lg"
-                colorScheme="yellow"
-                bg="yellow.500"
-                color="black"
-                _hover={{
-                  bg: "yellow.400",
-                  transform: "translateY(-2px)",
-                  boxShadow: "lg"
-                }}
-                _active={{
-                  bg: "yellow.600"
-                }}
-                onClick={() => loginRef.current?.openModal()}
-              >
-                Login with Nostr
-              </Button>
-            </>
-          )}
+          {isLoggedIn ? <LoggedInNavItems /> : <LoggedOutNavItems />}
+          <ThemeToggle />
         </HStack>
 
         {/* Mobile Navigation */}
-        <Box 
-          display={{ base: 'block', md: 'none' }}
-          flexShrink={0}
-        >
+        <Box display={{ base: 'block', md: 'none' }}>
           <Menu>
             <MenuButton
               as={IconButton}
-              aria-label="Open menu"
-              icon={
-                isLoggedIn ? (
-                  <Avatar
-                    size="sm"
-                    src={profile?.picture}
-                    name={profile?.name || 'User'}
-                    bg={colorMode === 'light' ? 'gray.200' : 'whiteAlpha.200'}
-                  />
-                ) : (
-                  <HamburgerIcon />
-                )
-              }
+              aria-label="Navigation menu"
+              icon={<HamburgerIcon />}
               variant="ghost"
               color={colorMode === 'light' ? 'gray.700' : 'white'}
-              size="sm"
             />
             {isLoggedIn ? <LoggedInMobileMenu /> : <LoggedOutMobileMenu />}
           </Menu>
         </Box>
-
-        <ThemeToggle />
       </Flex>
     </Box>
   );

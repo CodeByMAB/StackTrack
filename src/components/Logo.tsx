@@ -1,10 +1,28 @@
 import { Box } from '@chakra-ui/react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import stacktrackIcon from '../assets/stacktrack-icon.svg';
+import { useAuth } from '../contexts/AuthContext';
 
 const Logo = () => {
+  const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isLoggedIn) {
+      navigate('/dashboard');
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
-    <Link to="/">
+    <Box
+      as="a"
+      href="/"
+      onClick={handleLogoClick}
+      display="inline-block"
+    >
       <Box
         as="img"
         src={stacktrackIcon}
@@ -14,7 +32,7 @@ const Logo = () => {
         transition="all 0.2s"
         _hover={{ transform: 'scale(1.05)' }}
       />
-    </Link>
+    </Box>
   );
 };
 

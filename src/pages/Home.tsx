@@ -1,29 +1,32 @@
-import { Box, Button, Container, Heading, Text, VStack, Image, useColorMode, Link } from '@chakra-ui/react';
+import { Box, Button, Container, Heading, Text, VStack, Image, useColorMode } from '@chakra-ui/react';
 import ThemeToggle from '../components/ThemeToggle';
 import heroImage from '../assets/hero-img.png';
 import stacktrackLogo from '../assets/stacktrack-logo.png';
 import { useRef, useEffect } from 'react';
 import NostrLoginEnhanced from '../components/NostrLoginEnhanced';
 import { useNavigate } from 'react-router-dom';
-import { SecurityService } from '../services/SecurityService';
+import { useAuth } from '../contexts/AuthContext';
 
 const Home = () => {
   const { colorMode } = useColorMode();
   const loginRef = useRef<{ openModal: () => void }>(null);
   const navigate = useNavigate();
+  const { isLoggedIn, checkAuthStatus } = useAuth();
 
-  // Check if user is logged in on mount
+  // Check if user is logged in on mount and when auth state changes
   useEffect(() => {
-    const pubkey = localStorage.getItem('nostr_pubkey');
-    if (pubkey) {
+    // Force a fresh auth check
+    checkAuthStatus();
+    if (isLoggedIn) {
       navigate('/dashboard');
     }
-  }, [navigate]);
+  }, [checkAuthStatus, isLoggedIn, navigate]);
 
   // Handle logo/StackTrack click
-  const handleLogoClick = () => {
-    const pubkey = localStorage.getItem('nostr_pubkey');
-    if (pubkey) {
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    checkAuthStatus();
+    if (isLoggedIn) {
       navigate('/dashboard');
     }
   };
@@ -108,27 +111,37 @@ const Home = () => {
             maxW={{ base: "100%", md: "90%", lg: "80%" }}
             mx="auto"
           >
-            <Image
-              src={stacktrackLogo}
-              alt="StackTrack Logo"
-              width={{ base: "240px", md: "300px", lg: "360px" }}
-              height="auto"
-              mb={{ base: 4, md: 6 }}
-              filter={colorMode === 'light' 
-                ? 'drop-shadow(0 0 15px rgba(255,255,255,0.8)) drop-shadow(0 0 25px rgba(255,255,255,0.4))' 
-                : 'brightness(1) drop-shadow(0 0 15px rgba(0,0,0,0.5)) drop-shadow(0 0 25px rgba(0,0,0,0.3))'
-              }
-              borderRadius="25px"
-              sx={{
-                '-webkit-mask-image': 'radial-gradient(circle at center, black 85%, transparent 100%)',
-                'mask-image': 'radial-gradient(circle at center, black 85%, transparent 100%)'
-              }}
-            />
+            <Box
+              as="a"
+              href="/"
+              onClick={handleLogoClick}
+              display="inline-block"
+              cursor={isLoggedIn ? 'pointer' : 'default'}
+            >
+              <Image
+                src={stacktrackLogo}
+                alt="StackTrack Logo"
+                width={{ base: "240px", md: "300px", lg: "360px" }}
+                height="auto"
+                mb={{ base: 4, md: 6 }}
+                filter={colorMode === 'light' 
+                  ? 'drop-shadow(0 0 15px rgba(255,255,255,0.8)) drop-shadow(0 0 25px rgba(255,255,255,0.4))' 
+                  : 'brightness(1) drop-shadow(0 0 15px rgba(0,0,0,0.5)) drop-shadow(0 0 25px rgba(0,0,0,0.3))'
+                }
+                borderRadius="25px"
+                sx={{
+                  '-webkit-mask-image': 'radial-gradient(circle at center, black 85%, transparent 100%)',
+                  'mask-image': 'radial-gradient(circle at center, black 85%, transparent 100%)'
+                }}
+              />
+            </Box>
             
-            <Link 
+            <Box
+              as="a"
+              href="/"
               onClick={handleLogoClick}
               _hover={{ textDecoration: 'none' }}
-              cursor={localStorage.getItem('nostr_pubkey') ? 'pointer' : 'default'}
+              cursor={isLoggedIn ? 'pointer' : 'default'}
             >
               <Heading
                 as="h1"
@@ -148,7 +161,7 @@ const Home = () => {
                 <Text as="span" color="orange.400">sats</Text>
                 .
               </Heading>
-            </Link>
+            </Box>
             
             <Text
               color={colorMode === 'light' ? 'gray.800' : 'whiteAlpha.900'}
@@ -188,23 +201,11 @@ const Home = () => {
       {/* Add NostrLoginEnhanced component with ref */}
       <NostrLoginEnhanced 
         ref={loginRef} 
-        onLogin={(pubkey, profile) => {
-          // Store the pubkey and profile
-          localStorage.setItem('nostr_pubkey', pubkey);
-          localStorage.setItem('nostr_profile', JSON.stringify(profile));
-          
-          // Set the auth timestamp using SecurityService
-          localStorage.setItem('nostr_auth_timestamp', Date.now().toString());
-          
-          // Navigate to dashboard
-          navigate('/dashboard');
-          
-          // Refresh the authentication timer
-          SecurityService.refreshAuthentication();
-        }} 
+        onLogin={() => {
+          // Login is now handled by AuthContext inside NostrLoginEnhanced
+          // No need to duplicate localStorage logic here
+        }}
       />
-
-      {/* Footer is now handled by App.tsx */}
     </Box>
   );
 };

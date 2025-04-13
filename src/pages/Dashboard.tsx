@@ -41,6 +41,12 @@ const Dashboard = () => {
     onClose: onItemModalClose 
   } = useDisclosure();
 
+  // Handle adding an item
+  const handleAddItem = () => {
+    setSelectedItem(undefined); // No item selected means adding new
+    onItemModalOpen();
+  };
+
   useEffect(() => {
     // Check if user is authenticated using SecurityService
     if (!SecurityService.isAuthenticated()) {
@@ -59,16 +65,18 @@ const Dashboard = () => {
       }
     }, 5 * 60 * 1000); // Refresh every 5 minutes
     
+    // Listen for the openAddItemModal event
+    const handleOpenAddItemModal = () => {
+      handleAddItem();
+    };
+
+    window.addEventListener('openAddItemModal', handleOpenAddItemModal);
+
     return () => {
       clearInterval(refreshInterval);
+      window.removeEventListener('openAddItemModal', handleOpenAddItemModal);
     };
-  }, [navigate]);
-
-  // Handle adding an item
-  const handleAddItem = () => {
-    setSelectedItem(undefined); // No item selected means adding new
-    onItemModalOpen();
-  };
+  }, [navigate, handleAddItem]);
 
   // Handle editing an item
   const handleEditItem = (item: WishlistItem) => {
