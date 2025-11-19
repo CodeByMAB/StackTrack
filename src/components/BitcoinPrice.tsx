@@ -77,9 +77,11 @@ export const BitcoinPrice = () => {
               }
 
               const data = await response.json();
+              console.log(`${api.name} API response:`, data);
               const price = api.parser(data);
+              console.log(`${api.name} parsed price:`, price);
 
-              if (typeof price === 'number' && price > 0) {
+              if (typeof price === 'number' && !isNaN(price) && price > 0) {
                 const newPriceData: BitcoinPriceType = {
                   usd: price,
                   timestamp: Date.now()
@@ -161,7 +163,7 @@ export const BitcoinPrice = () => {
         <Text fontWeight="bold" fontSize="lg">Bitcoin Price:</Text>
         <Skeleton isLoaded={!isLoading} ml={2} borderRadius="md" minW="100px">
           <Text fontWeight="bold" fontSize="lg" className="bitcoin-price-value privacy-sensitive">
-            {priceData ? new Intl.NumberFormat('en-US', {
+            {priceData && !isNaN(priceData.usd) ? new Intl.NumberFormat('en-US', {
               style: 'currency',
               currency: 'USD'
             }).format(priceData.usd) : 'N/A'}

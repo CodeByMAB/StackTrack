@@ -68,9 +68,11 @@ export const BitcoinService = {
           }
 
           const data = await response.json();
+          console.log(`${api.name} API response:`, data);
           const price = api.parser(data);
+          console.log(`${api.name} parsed price:`, price);
 
-          if (typeof price === 'number' && price > 0) {
+          if (typeof price === 'number' && !isNaN(price) && price > 0) {
             priceData = {
               usd: price,
               timestamp: Date.now()
