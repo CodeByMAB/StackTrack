@@ -39,36 +39,72 @@ export const BitcoinPrice = () => {
           }
         }
         
-        // Try to fetch fresh data from Block's Bitcoin Price API
+        // Try to fetch fresh data from multiple APIs
         try {
-          console.log('Fetching Bitcoin price from Block API...');
-          const response = await fetch(BLOCK_BITCOIN_PRICE_API_URL);
-          
-          if (!response.ok) {
-            throw new Error(`API returned status ${response.status}`);
+          const apis = [
+            {
+              name: 'Block',
+              url: 'https://pricing.bitcoin.block.xyz/current-price',
+              parser: (data: any) => parseFloat(data.amount)
+            },
+            {
+              name: 'CoinGecko',
+              url: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
+              parser: (data: any) => data.bitcoin?.usd
+            },
+            {
+              name: 'Coinbase',
+              url: 'https://api.coinbase.com/v2/prices/BTC-USD/spot',
+              parser: (data: any) => parseFloat(data.data?.amount)
+            },
+            {
+              name: 'Blockchain.info',
+              url: 'https://blockchain.info/ticker',
+              parser: (data: any) => data.USD?.last
+            }
+          ];
+
+          let fetchedPrice = false;
+
+          for (const api of apis) {
+            try {
+              console.log(`Trying ${api.name} API...`);
+              const response = await fetch(api.url);
+
+              if (!response.ok) {
+                console.warn(`${api.name} API returned status ${response.status}`);
+                continue;
+              }
+
+              const data = await response.json();
+              console.log(`${api.name} API response:`, data);
+              const price = api.parser(data);
+              console.log(`${api.name} parsed price:`, price);
+
+              if (typeof price === 'number' && !isNaN(price) && price > 0) {
+                const newPriceData: BitcoinPriceType = {
+                  usd: price,
+                  timestamp: Date.now()
+                };
+
+                setPriceData(newPriceData);
+                localStorage.setItem(BITCOIN_PRICE_KEY, JSON.stringify(newPriceData));
+                console.log(`Successfully fetched Bitcoin price from ${api.name}: $${price}`);
+                fetchedPrice = true;
+                break;
+              }
+            } catch (apiError) {
+              console.warn(`${api.name} API failed:`, apiError);
+              continue;
+            }
           }
-          
-          const data = await response.json();
-          
-          // Check if the response contains the expected data
-          // Block API returns data in a format like { USD: 12345.67 }
-          if (typeof data.USD !== 'number') {
-            throw new Error('Invalid price data received');
+
+          if (!fetchedPrice) {
+            throw new Error('All Bitcoin price APIs failed');
           }
-          
-          // Create a new price data object
-          const newPriceData: BitcoinPriceType = {
-            usd: data.USD,
-            timestamp: Date.now()
-          };
-          
-          // Update state and cache the data
-          setPriceData(newPriceData);
-          localStorage.setItem(BITCOIN_PRICE_KEY, JSON.stringify(newPriceData));
-          console.log('Successfully updated Bitcoin price:', newPriceData.usd);
         } catch (fetchError) {
           console.error('Error fetching latest Bitcoin price:', fetchError);
-          
+
           // If we have no cached data at all, show an error
           if (!priceData && !cachedData) {
             setError('Bitcoin price data currently unavailable');
@@ -127,7 +163,7 @@ export const BitcoinPrice = () => {
         <Text fontWeight="bold" fontSize="lg">Bitcoin Price:</Text>
         <Skeleton isLoaded={!isLoading} ml={2} borderRadius="md" minW="100px">
           <Text fontWeight="bold" fontSize="lg" className="bitcoin-price-value privacy-sensitive">
-            {priceData ? new Intl.NumberFormat('en-US', {
+            {priceData && !isNaN(priceData.usd) ? new Intl.NumberFormat('en-US', {
               style: 'currency',
               currency: 'USD'
             }).format(priceData.usd) : 'N/A'}
