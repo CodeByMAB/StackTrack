@@ -142,23 +142,48 @@ export const ItemFormModal = ({ isOpen, onClose, item, onSave, onDelete }: ItemF
     if (formValues.price && formValues.price > 0 && formValues.currency === 'USD') {
       try {
         // Import BitcoinService dynamically to avoid circular dependencies
-        import('../../services/BitcoinService').then(module => {
+        import('../../services/BitcoinService').then(async module => {
           const BitcoinService = module.default || module.BitcoinService;
-          // Use the service to convert or fallback to estimation
-          const sats = BitcoinService.usdToSats ? 
-            BitcoinService.usdToSats(formValues.price) : 
-            Math.round(formValues.price * 1600); // Fallback estimation
-          setSatsPreview(Math.round(sats));
+          try {
+            // Use the service to convert (async function needs await)
+            const sats = BitcoinService.usdToSats ?
+              await BitcoinService.usdToSats(formValues.price) :
+              Math.round(formValues.price * 1600); // Fallback estimation
+            const roundedSats = Math.round(sats);
+            setSatsPreview(roundedSats);
+            // Also update formValues so it gets saved
+            setFormValues(prev => ({
+              ...prev,
+              satsEquivalent: roundedSats
+            }));
+          } catch (conversionError) {
+            console.error('Error converting to sats:', conversionError);
+            // Fallback to estimation if conversion fails
+            const mockConversion = Math.round(formValues.price * 1600);
+            setSatsPreview(mockConversion);
+            setFormValues(prev => ({
+              ...prev,
+              satsEquivalent: mockConversion
+            }));
+          }
         }).catch(err => {
           console.error('Error loading BitcoinService:', err);
           // Fallback to estimation if service can't be loaded
-          const mockConversion = formValues.price * 1600;
-          setSatsPreview(Math.round(mockConversion));
+          const mockConversion = Math.round(formValues.price * 1600);
+          setSatsPreview(mockConversion);
+          setFormValues(prev => ({
+            ...prev,
+            satsEquivalent: mockConversion
+          }));
         });
       } catch (error) {
         // Fallback to estimation if any error occurs
-        const mockConversion = formValues.price * 1600;
-        setSatsPreview(Math.round(mockConversion));
+        const mockConversion = Math.round(formValues.price * 1600);
+        setSatsPreview(mockConversion);
+        setFormValues(prev => ({
+          ...prev,
+          satsEquivalent: mockConversion
+        }));
       }
     } else {
       setSatsPreview(null);
