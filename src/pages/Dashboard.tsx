@@ -45,8 +45,8 @@ const Dashboard = () => {
 
         const updatedItems = await Promise.all(
           currentItems.map(async (item: WishlistItem) => {
-            // Recalculate sats if the item has a USD price
-            if (item.currency === 'USD' && item.price > 0) {
+            // Only recalculate if item doesn't already have satsEquivalent
+            if (item.currency === 'USD' && item.price > 0 && !item.satsEquivalent) {
               try {
                 const sats = await BitcoinService.usdToSats(item.price);
                 return { ...item, satsEquivalent: sats };

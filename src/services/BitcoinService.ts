@@ -31,31 +31,80 @@ export const BitcoinService = {
         }
       }
 
-      // Fetch fresh data from Block Bitcoin Price API
-      const response = await fetch('https://pricing.bitcoin.block.xyz/current-price');
-      const data = await response.json();
+      let priceData: BitcoinPrice | null = null;
 
-      const priceData: BitcoinPrice = {
-        usd: data.USD, // Block API uses uppercase USD
-        timestamp: Date.now()
-      };
+      // Try multiple APIs in order until one works
+      const apis = [
+        {
+          name: 'Block',
+          url: 'https://pricing.bitcoin.block.xyz/current-price',
+          parser: (data: any) => data.USD
+        },
+        {
+          name: 'CoinGecko',
+          url: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
+          parser: (data: any) => data.bitcoin?.usd
+        },
+        {
+          name: 'Coinbase',
+          url: 'https://api.coinbase.com/v2/prices/BTC-USD/spot',
+          parser: (data: any) => parseFloat(data.data?.amount)
+        },
+        {
+          name: 'Blockchain.info',
+          url: 'https://blockchain.info/ticker',
+          parser: (data: any) => data.USD?.last
+        }
+      ];
 
-      // Cache the data
-      localStorage.setItem(BITCOIN_PRICE_KEY, JSON.stringify(priceData));
+      for (const api of apis) {
+        try {
+          console.log(`Trying ${api.name} API...`);
+          const response = await fetch(api.url);
 
-      return priceData;
+          if (!response.ok) {
+            console.warn(`${api.name} API returned status ${response.status}`);
+            continue;
+          }
+
+          const data = await response.json();
+          const price = api.parser(data);
+
+          if (typeof price === 'number' && price > 0) {
+            priceData = {
+              usd: price,
+              timestamp: Date.now()
+            };
+            console.log(`Successfully fetched Bitcoin price from ${api.name}: $${price}`);
+            break;
+          }
+        } catch (apiError) {
+          console.warn(`${api.name} API failed:`, apiError);
+          continue;
+        }
+      }
+
+      if (priceData) {
+        // Cache the data
+        localStorage.setItem(BITCOIN_PRICE_KEY, JSON.stringify(priceData));
+        return priceData;
+      }
+
+      throw new Error('All Bitcoin price APIs failed');
     } catch (error) {
       console.error('Error fetching Bitcoin price:', error);
 
       // Return cached data if available, even if expired
       const cachedData = localStorage.getItem(BITCOIN_PRICE_KEY);
       if (cachedData) {
+        console.log('Using expired cache data');
         return JSON.parse(cachedData) as BitcoinPrice;
       }
 
       // If all else fails, return a fallback price
+      console.warn('Using fallback Bitcoin price');
       return {
-        usd: 61000, // Fallback price
+        usd: 95000, // Updated fallback price (closer to current BTC price)
         timestamp: Date.now()
       };
     }
