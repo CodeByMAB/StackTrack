@@ -38,7 +38,7 @@ export const BitcoinService = {
         {
           name: 'Block',
           url: 'https://pricing.bitcoin.block.xyz/current-price',
-          parser: (data: any) => data.USD
+          parser: (data: any) => parseFloat(data.amount)
         },
         {
           name: 'CoinGecko',
