@@ -32,6 +32,48 @@ const Dashboard = () => {
     const savedItems = localStorage.getItem('wishlist_items');
     return savedItems ? JSON.parse(savedItems) : mockWishlistItems;
   });
+
+  // Recalculate sats equivalent for all items when component mounts
+  useEffect(() => {
+    let isMounted = true;
+
+    const updateSatsForAllItems = async () => {
+      try {
+        const { BitcoinService } = await import('../services/BitcoinService');
+        const savedItems = localStorage.getItem('wishlist_items');
+        const currentItems = savedItems ? JSON.parse(savedItems) : mockWishlistItems;
+
+        const updatedItems = await Promise.all(
+          currentItems.map(async (item: WishlistItem) => {
+            // Recalculate sats if the item has a USD price
+            if (item.currency === 'USD' && item.price > 0) {
+              try {
+                const sats = await BitcoinService.usdToSats(item.price);
+                return { ...item, satsEquivalent: sats };
+              } catch (error) {
+                console.error('Error converting price to sats for item:', item.name, error);
+                return item;
+              }
+            }
+            return item;
+          })
+        );
+
+        // Only update state if component is still mounted
+        if (isMounted) {
+          setWishlistItems(updatedItems);
+        }
+      } catch (error) {
+        console.error('Error updating sats equivalents:', error);
+      }
+    };
+
+    updateSatsForAllItems();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Run only once on mount
   const [selectedItem, setSelectedItem] = useState<WishlistItem | undefined>(undefined);
   
   // Modal controls
