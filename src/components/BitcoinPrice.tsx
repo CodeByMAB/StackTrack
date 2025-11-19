@@ -157,33 +157,37 @@ export const BitcoinPrice = () => {
       bg={colorMode === 'light' ? 'orange.50' : 'orange.900'}
       boxShadow="sm"
       color={colorMode === 'light' ? 'orange.800' : 'orange.100'}
+      minW="280px"
     >
-      <Flex align="center" justify="center">
-        <Icon as={FaBitcoin} color="orange.500" boxSize={6} mr={2} />
-        <Text fontWeight="bold" fontSize="lg">Bitcoin Price:</Text>
-        <Skeleton isLoaded={!isLoading} ml={2} borderRadius="md" minW="100px">
-          <Text fontWeight="bold" fontSize="lg" className="bitcoin-price-value privacy-sensitive">
+      <Flex align="center" justify="center" flexWrap="nowrap">
+        <Icon as={FaBitcoin} color="orange.500" boxSize={6} mr={2} flexShrink={0} />
+        <Text fontWeight="bold" fontSize="lg" whiteSpace="nowrap" mr={2}>Bitcoin Price:</Text>
+        <Skeleton isLoaded={!isLoading} ml={2} borderRadius="md" minW="120px">
+          <Text fontWeight="bold" fontSize="lg" className="bitcoin-price-value privacy-sensitive" whiteSpace="nowrap">
             {priceData && !isNaN(priceData.usd) ? new Intl.NumberFormat('en-US', {
               style: 'currency',
-              currency: 'USD'
+              currency: 'USD',
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
             }).format(priceData.usd) : 'N/A'}
           </Text>
         </Skeleton>
       </Flex>
       {priceData && (
-        <Flex 
-          justifyContent="center" 
-          alignItems="center" 
+        <Flex
+          justifyContent="center"
+          alignItems="center"
           mt={1}
           fontSize="xs"
           color={colorMode === 'light' ? 'gray.500' : 'gray.400'}
+          flexWrap="wrap"
         >
           <Text>
-            {new Date(priceData.timestamp).toLocaleString()} 
+            {new Date(priceData.timestamp).toLocaleString()}
             {Date.now() - priceData.timestamp > CACHE_DURATION && ' (cached)'}
           </Text>
-          <Link 
-            href="https://block.xyz" 
+          <Link
+            href="https://block.xyz"
             isExternal
             display="inline-flex"
             alignItems="center"

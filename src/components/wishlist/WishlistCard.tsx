@@ -103,24 +103,25 @@ export const WishlistCard = ({ item, onClick, categories = mockCategories }: Wis
         </Text>
       )}
       
-      <Flex mt={3} justify="space-between" align="center">
-        <Text fontWeight="bold" fontSize="md" className="wishlist-price privacy-sensitive">
+      <Flex mt={3} justify="space-between" align="center" gap={3} flexWrap="wrap">
+        <Text fontWeight="bold" fontSize="md" className="wishlist-price privacy-sensitive" whiteSpace="nowrap">
           {formattedPrice}
         </Text>
-        
+
         {formattedSats && (
-          <Flex 
-            align="center" 
-            bg={colorMode === 'light' ? 'orange.50' : 'orange.900'} 
+          <Flex
+            align="center"
+            bg={colorMode === 'light' ? 'orange.50' : 'orange.900'}
             color={colorMode === 'light' ? 'orange.600' : 'orange.200'}
-            p={1}
-            pl={2}
-            pr={2}
+            px={3}
+            py={1.5}
             borderRadius="md"
             fontSize="sm"
             className="sats-amount privacy-sensitive"
+            whiteSpace="nowrap"
+            flexShrink={0}
           >
-            <Icon as={FaBitcoin} mr={1} color="orange.500" />
+            <Icon as={FaBitcoin} mr={1.5} color="orange.500" boxSize={3.5} />
             {formattedSats} sats
           </Flex>
         )}
